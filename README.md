@@ -96,7 +96,17 @@ Para criar as tabelas e popular o banco SQLite com a trilha e conteúdos iniciai
 npm run seed
 ```
 
-### 4. Executando a Aplicação
+### 4. Variáveis de Ambiente (.env)
+O sistema possui configurações prontas para desenvolvimento local. Certifique-se de que o arquivo `Back/.env` possua os seguintes valores básicos (caso precise recriar):
+```env
+PORT=5000
+NODE_ENV=development
+JWT_SECRET=teachermakers_secret_key_2024
+FRONTEND_URL=http://localhost:3000
+DATABASE_URL=database.sqlite
+```
+
+### 5. Executando a Aplicação
 
 Para iniciar o Frontend e o Backend simultaneamente:
 ```bash
@@ -104,7 +114,7 @@ npm start
 ```
 
 Ou execute separadamente:
-- **Backend (API na porta 3001):**
+- **Backend (API na porta 5000):**
   ```bash
   npm run back
   ```
@@ -115,10 +125,29 @@ Ou execute separadamente:
 
 ---
 
+## 🔑 Acesso ao Sistema e Credenciais de Teste
+
+Abra o seu navegador e acesse: [http://localhost:3000](http://localhost:3000)
+
+**Para acessar como professor/aluno (Testes):**
+Como o banco de dados é inicializado vazio de usuários por questões de segurança, para testar a plataforma você deve realizar um cadastro rápido:
+1. Na tela de Login, clique em **"Cadastre-se"**.
+2. Preencha os campos com dados de teste (Ex: `Nome: Teste`, `Email: teste@escola.com`, `Senha: 123456`).
+3. Após o cadastro, você será redirecionado para a plataforma principal (Dashboard).
+
+---
+
 ## 📖 Documentação da API
 
 Com o backend em execução, acesse a documentação interativa do Swagger em:
-👉 `http://localhost:3001/api-docs`
+👉 `http://localhost:5000/api-docs`
+
+---
+
+## 🛠️ Solução de Problemas Comuns (Troubleshooting)
+
+- **Erro "Port already in use" (Porta em uso):** Caso a porta 3000 ou 5000 já estejam sendo usadas, feche outros terminais rodando processos Node.js ou altere a variável `PORT` no arquivo `.env`.
+- **Erro de Banco de Dados ou Login Falhando:** O arquivo `database.sqlite` pode estar corrompido ou vazio. Pare a execução (`Ctrl+C`) e rode o comando `npm run reset-db` para recriar o banco do zero.
 
 ---
 
