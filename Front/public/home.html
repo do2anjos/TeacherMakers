@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TeacherMakers — Painel do Professor." />
+  <title>Dashboard - TeacherMakers</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="script/icons.js"></script>
+
+  <link rel="icon" href="img/favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4f46e5" />
+  <script src="script/theme.js"></script>
+</head>
+
+<body>
+
+  <div class="dashboard-wrapper">
+
+    <div class="main-column">
+
+      <header class="dash-header">
+        
+        <div class="dash-greeting">
+          <h1 class="dash-greeting-title">Olá, Matheus!</h1>
+          <p class="dash-greeting-sub">Bom te ver por aqui novamente</p>
+        </div>
+
+        <div class="avatar-wrap" id="avatar-wrap">
+          <button class="user-avatar-btn" id="avatar-btn" aria-haspopup="true" aria-expanded="false">
+            <div class="dash-header-user-info">
+              <p class="dash-header-user-name">Matheus</p>
+            </div>
+            <div class="user-avatar">M</div>
+            <span class="chevron-icon" id="chevron-icon"></span>
+          </button>
+
+          <div class="dropdown-menu" id="dropdown-menu" role="menu">
+            <a href="#" class="dropdown-item" id="di-profile">
+              <span id="di-icon-user"></span> Meu Perfil
+            </a>
+            <a href="#" class="dropdown-item" id="di-settings">
+              <span id="di-icon-settings"></span> Configurações
+            </a>
+            <div class="dropdown-divider"></div>
+            <label class="dropdown-toggle-label">
+              <span id="di-icon-moon"></span> Modo Escuro
+              <span class="toggle-switch">
+                <input type="checkbox" id="dark-mode-toggle" />
+                <span class="toggle-track"></span>
+              </span>
+            </label>
+            <div class="dropdown-divider"></div>
+            <a href="certificado.html" class="dropdown-item" id="di-certificado">
+              <span id="di-icon-certificado"></span> Certificado
+            </a>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item danger" id="di-logout">
+              <span id="di-icon-logout"></span> Sair
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="dashboard-content">
+
+          <section class="dash-section active" id="section-home">
+            <div class="home-dashboard-layout">
+
+              <aside class="stats-column animate-fade-in-up" style="animation-delay:0s;">
+                <h3 style="font-size: 1.1rem; color: var(--text); margin-bottom: 0.5rem; font-weight: 700;">Meu Progresso</h3>
+                
+                <div class="stat-card">
+                  <div class="stat-card-top">
+                    <div>
+                      <p class="stat-label">Aulas concluídas</p>
+                      <p class="stat-value"><span id="stat-aulas">0</span> <span class="stat-of">de 14</span></p>
+                    </div>
+                  </div>
+                  <div class="stat-mini-bar">
+                    <div class="stat-mini-fill" id="stat-aulas-fill" style="width:0%;background:#2eaa6f;"></div>
+                  </div>
+                </div>
+
+                <div class="stat-card">
+                  <div class="stat-card-top">
+                    <div>
+                      <p class="stat-label">Práticas concluídas</p>
+                      <p class="stat-value"><span id="stat-praticas">0</span> <span class="stat-of">de 16</span></p>
+                    </div>
+                  </div>
+                  <div class="stat-mini-bar">
+                    <div class="stat-mini-fill" id="stat-praticas-fill" style="width:0%;background:#e8890c;"></div>
+                  </div>
+                </div>
+
+                <div class="stat-card">
+                  <div class="stat-card-top">
+                    <div>
+                      <p class="stat-label">Módulos completos</p>
+                      <p class="stat-value"><span id="stat-modulos">0</span> <span class="stat-of">de 4</span></p>
+                    </div>
+                  </div>
+                  <div class="stat-mini-bar">
+                    <div class="stat-mini-fill" id="stat-modulos-fill" style="width:0%;background:var(--primary);"></div>
+                  </div>
+                </div>
+              </aside>
+
+              <div class="modules-column animate-fade-in-up" style="animation-delay:.1s;">
+                
+                <div class="trail-header" style="margin-bottom: 1.5rem;">
+                  <h2>Sua Jornada de Aprendizado</h2>
+                  <p>Acesse os conteúdos dos módulos e aulas diretamente por aqui.</p>
+                </div>
+
+                <div class="syllabus-list" id="home-modules-grid">
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="script/api.js"></script>
+  <script src="script/dashboard.js"></script>
+  <script src="script/sidebar.js"></script>
+  <script>injectSidebar('home');</script>
+</body>
+
+</html>

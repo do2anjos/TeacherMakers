@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TeacherMakers - Sala de Aula." />
+  <title>Aula - TeacherMakers</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="script/icons.js"></script>
+
+  <link rel="icon" href="img/favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4f46e5" />
+  <script src="script/theme.js"></script>
+</head>
+
+<body>
+  <div class="dashboard-wrapper">
+
+    <div class="main-column">
+      <header class="dash-header">
+        <div class="dash-greeting">
+          <h1 class="dash-greeting-title">Sala de Aula</h1>
+          <p class="dash-greeting-sub" id="header-modulo">Módulo 1: Pensamento Computacional</p>
+        </div>
+
+        <div class="avatar-wrap" id="avatar-wrap">
+          <button class="user-avatar-btn" id="avatar-btn" aria-haspopup="true" aria-expanded="false">
+            <div class="dash-header-user-info">
+              <p class="dash-header-user-name">Matheus</p>
+            </div>
+            <div class="user-avatar">M</div>
+            <span class="chevron-icon" id="chevron-icon"></span>
+          </button>
+
+          <div class="dropdown-menu" id="dropdown-menu" role="menu">
+            <a href="#" class="dropdown-item" id="di-profile">
+              <span id="di-icon-user"></span> Meu Perfil
+            </a>
+            <a href="#" class="dropdown-item" id="di-settings">
+              <span id="di-icon-settings"></span> Configurações
+            </a>
+            <div class="dropdown-divider"></div>
+            <label class="dropdown-toggle-label">
+              <span id="di-icon-moon"></span> Modo Escuro
+              <span class="toggle-switch">
+                <input type="checkbox" id="dark-mode-toggle" />
+                <span class="toggle-track"></span>
+              </span>
+            </label>
+            <div class="dropdown-divider"></div>
+            <a href="certificado.html" class="dropdown-item" id="di-certificado">
+              <span id="di-icon-certificado"></span> Certificado
+            </a>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item danger" id="di-logout">
+              <span id="di-icon-logout"></span> Sair
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="dashboard-content" style="background: #f8fafc; min-height: calc(100vh - 80px);">
+        <div class="aula-container animate-fade-in-up">
+          <header class="aula-header">
+            <a href="home.html" class="aula-back-link">
+              <span id="icon-back"></span> Voltar para a Trilha
+            </a>
+            <h1 class="aula-title" id="aula-title">Carregando...</h1>
+            <p class="aula-subtitle" id="aula-subtitle"></p>
+          </header>
+
+          <div class="aula-learning-layout">
+            <aside class="aula-step-sidebar" aria-label="Etapas da aula">
+              <button class="aula-step-link active" type="button" data-step="video" id="step-video-btn">
+                <span class="aula-step-icon" id="icon-step-video"></span>
+                <span>Vídeo Conceitual</span>
+              </button>
+              <button class="aula-step-link locked" type="button" data-step="resumo" id="step-resumo-btn" disabled>
+                <span class="aula-step-icon" id="icon-step-resumo"></span>
+                <span>Resumo da Aula</span>
+              </button>
+              <button class="aula-step-link locked" type="button" data-step="quiz" id="step-quiz-btn" disabled
+                aria-label="Acessar Quiz de Fixação">
+                <span class="aula-step-icon" id="icon-step-quiz"></span>
+                <span>Quiz de Fixação</span>
+              </button>
+            </aside>
+
+            <div class="aula-content">
+              <div class="tab-pane active" id="pane-video">
+                <div class="video-container-wrapper" style="margin-bottom: 2rem;">
+                  <div class="video-placeholder">
+                    <div class="video-play-btn"><span id="icon-video-play"></span></div>
+                  </div>
+                </div>
+                
+                <div class="video-info-wrapper" style="background: white; padding: 2rem; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                  <h3 style="margin-bottom: 1rem; color: #1e293b; font-size: 1.35rem;" id="video-title"></h3>
+                  <p style="color: #64748b; line-height: 1.7; margin: 0; font-size: 1.05rem;" id="video-desc"></p>
+                </div>
+
+                <div class="aula-footer" style="display: flex; justify-content: flex-end; padding-top: 1.5rem; border-top: 1px solid #e2e8f0;">
+                  <button class="btn btn-primary" id="complete-video-btn" aria-label="Marcar vídeo como concluído">
+                    Marcar como concluído <span id="icon-complete-video" style="margin-left: 0.5rem;"></span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="tab-pane" id="pane-resumo">
+                <div class="resumo-info-wrapper" style="background: white; padding: 2.5rem; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                  <h3 style="margin-bottom: 1.5rem; color: #1e293b; font-size: 1.35rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">Resumo da Aula</h3>
+                  <div class="aula-resumo-text" id="resumo-content" style="color: #475569; line-height: 1.8; font-size: 1.05rem;"></div>
+                </div>
+                <div class="aula-footer" style="display: flex; justify-content: space-between; padding-top: 1.5rem; border-top: 1px solid #e2e8f0;">
+                  <button class="btn btn-outline" id="back-to-video-btn" type="button">Voltar ao Vídeo</button>
+                  <button class="btn btn-primary" id="complete-resumo-btn" type="button">
+                    Marcar como concluído <span id="icon-complete-resumo" style="margin-left: 0.5rem;"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="quiz-modal-wrapper" class="intro-page-wrapper"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 9999;">
+    <div class="intro-modal"
+      style="width: 90%; max-width: 700px; max-height: 85vh; margin: auto; display: flex; flex-direction: column;">
+
+      <div class="intro-content-area" id="quiz-pane-inner"
+        style="flex: 1; overflow-y: auto; text-align: left; padding: 2rem 2.5rem;">
+        <div class="quiz-progress" style="margin-bottom: 2rem;">
+          <p style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;"
+            id="quiz-progress-text">Questão 1 de 3</p>
+          <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+            <div id="quiz-progress-fill"
+              style="width: 33%; height: 100%; background: var(--primary); transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+
+        <div id="quiz-container"></div>
+      </div>
+
+      <div class="intro-footer" id="quiz-footer">
+        <button class="btn btn-outline" id="close-quiz-btn" aria-label="Fechar quiz e revisar vídeo">Revisar
+          Vídeo</button>
+        <div style="display: flex; gap: .75rem;">
+          <button class="btn btn-primary" id="btn-verificar" disabled aria-label="Verificar resposta selecionada">
+            Verificar Resposta
+          </button>
+          <button class="btn btn-primary" id="btn-next" style="display: none;"
+            aria-label="Avançar para a próxima questão">
+            Próxima Questão
+          </button>
+          <button class="btn btn-primary" id="btn-concluir" style="display: none;" aria-label="Concluir aula">
+            <span id="icon-submit-quiz"></span> Concluir Aula
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script/api.js"></script>
+  <script src="script/aula.js"></script>
+  <script src="script/sidebar.js"></script>
+  <script>injectSidebar('aulas');</script>
+</body>
+
+</html>

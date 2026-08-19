@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TeacherMakers — Faça login para acessar a plataforma." />
+  <title>Login — TeacherMakers</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <link rel="icon" href="img/favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4f46e5" />
+  <script src="script/theme.js"></script>
+</head>
+
+<body class="auth-page">
+
+  <div class="hero-blob bg-sky-light animate-float"
+    style="top:3rem;    left:3rem;   height:8rem; width:8rem; opacity:.4;"></div>
+  <div class="hero-blob bg-teal-soft animate-bounce-soft"
+    style="bottom:4rem; right:4rem;  height:6rem; width:6rem; opacity:.35; animation-delay:.6s;"></div>
+  <div class="hero-blob bg-aqua animate-float"
+    style="top:40%;     left:10%;    height:4rem; width:4rem; opacity:.3;  animation-delay:1s;"></div>
+  <div class="hero-blob bg-gold animate-bounce-soft"
+    style="top:15%;     right:15%;   height:3rem; width:3rem; opacity:.25; animation-delay:.3s;"></div>
+
+  <nav class="landing-navbar">
+    <a href="index.html" class="logo">
+      
+      <span>TeacherMakers</span>
+    </a>
+  </nav>
+
+  <main class="auth-main">
+    <div class="auth-card">
+      
+      <div class="auth-logo">
+        <div class="auth-icon-wrapper">
+          
+        </div>
+        <h1>Bem-vindo de volta!</h1>
+        <p>Entre com sua conta para continuar</p>
+      </div>
+
+      <div class="form-alert" id="form-alert"></div>
+
+      <form class="auth-form" id="login-form" novalidate>
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" class="form-input" placeholder="seu@email.com" autocomplete="email" />
+        </div>
+
+        <div class="form-group">
+          <div class="form-label-row">
+            <label for="password">Senha</label>
+            <a href="#" class="forgot-link">Esqueceu a senha?</a>
+          </div>
+          <input id="password" type="password" class="form-input" placeholder="••••••••"
+            autocomplete="current-password" />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-auth" id="submit-btn">
+          Entrar
+        </button>
+      </form>
+
+      <div class="auth-divider"><span>ou</span></div>
+
+      <p class="auth-footer-text">
+        Não tem uma conta? <a href="Cadastro.html">Cadastre-se</a>
+      </p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <h3>TeacherMakers</h3>
+      <small> 2026 TeacherMakers</small>
+    </div>
+  </footer>
+
+  <script src="script/api.js"></script>
+  <script src="script/auth.js"></script>
+
+</body>
+
+</html>

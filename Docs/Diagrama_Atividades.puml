@@ -1,0 +1,103 @@
+@startuml Diagrama_Atividades_TeacherMakers
+
+title Diagrama de Atividades - TeacherMakers
+
+start
+
+:Acessar Landing Page;
+
+if (Possui conta?) then (sim)
+  :Acessar tela de Login;
+  :Informar e-mail e senha;
+  :Autenticar;
+else (não)
+  :Acessar tela de Cadastro;
+  :Informar nome, e-mail,\nnível de ensino e senha;
+  :Criar conta;
+  :Acessar tela de Login;
+  :Informar e-mail e senha;
+  :Autenticar;
+endif
+
+if (Onboarding já concluído?) then (sim)
+else (não)
+  :Realizar Onboarding\n(5 slides de introdução)\n>> introducao.html;
+endif
+
+:Acessar Dashboard\n>> home.html;
+
+while (Existem módulos pendentes?) is (sim)
+
+  :Abrir modal do módulo\n(ver conteúdos / continuar);
+
+  if (É módulo Introdução?) then (sim)
+    :Redirecionar para\nintroducao.html;
+    :Navegar pelos 5 slides;
+    :Concluir Onboarding;
+    :Retornar ao Dashboard;
+  else (não)
+
+    ' === ETAPA TEÓRICA (aula-step-sidebar) ===
+    while (Existem aulas teóricas pendentes?) is (sim)
+
+      :Abrir Sala de Aula\n>> aula.html?id=X;
+
+      ' -- Passo 1: Vídeo Conceitual --
+      :Assistir vídeo conceitual;
+      :Marcar vídeo como concluído\n(desbloqueia Resumo);
+
+      ' -- Passo 2: Resumo da Aula --
+      :Ler Resumo da Aula;
+      :Marcar resumo como concluído\n(desbloqueia Quiz);
+
+      ' -- Passo 3: Quiz de Fixação (modal) --
+      :Abrir Quiz de Fixação;
+
+      repeat
+        :Responder questão;
+        if (Acertou?) then (sim)
+        else (não)
+          :Exibir feedback de erro;
+          :Aguardar nova tentativa;
+        endif
+      repeat while (Existem questões restantes?) is (sim)
+
+      :Concluir aula\n(salvar progresso no backend);
+      :Retornar ao Dashboard;
+      :Desbloquear próxima aula teórica;
+
+    endwhile (não)
+
+    ' === ETAPA PRÁTICA (liberada após teóricas) ===
+    while (Existem aulas práticas pendentes?) is (sim)
+
+      :Abrir Prática Pedagógica\n>> praticas.html?id=X;
+
+      while (Existem etapas restantes?) is (sim)
+        if (É etapa de Ideias de Projetos?) then (sim)
+          :Acessar link do Google Drive\npara o Pilar correspondente;
+        else (não)
+          :Seguir instrução da etapa;
+        endif
+        :Avançar para próxima etapa;
+      endwhile (não)
+
+      :Registrar evidências\n(obrigatório: diário + foto);
+
+      :Finalizar prática\n(salvar progresso no backend);
+      :Retornar ao Dashboard;
+      :Desbloquear próxima aula prática;
+
+    endwhile (não)
+
+  endif
+
+  :Marcar módulo como concluído;
+
+endwhile (não)
+
+:Emitir Certificado de Conclusão;
+
+stop
+
+@enduml

@@ -1,0 +1,33 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+
+# Environment variables
+.env
+
+# Databases
+*.sqlite
+*.sqlite-journal
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Tools & Uploads
+.claude/
+Back/uploads/
+Back/logs/
+*.log
+db_dump.json
+
+# Documentation
+Docs/*.docx
+Docs/*.pdf
+Docs/rendered_docs_padronizado/
