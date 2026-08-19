@@ -1,0 +1,15 @@
+{
+  "name": "teachermakers-root",
+  "version": "1.0.0",
+  "description": "Orquestrador do projeto TeacherMakers",
+  "scripts": {
+    "start": "npx concurrently \"npm run dev --prefix Back\" \"npx serve Front/public -p 3000\"",
+    "back": "npm run dev --prefix Back",
+    "front": "npx serve Front/public -p 3000",
+    "seed": "node Back/src/utils/seeder.js",
+    "reset-db": "del Back\\database.sqlite && npm run seed"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

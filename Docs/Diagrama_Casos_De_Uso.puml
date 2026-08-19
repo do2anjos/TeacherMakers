@@ -1,0 +1,68 @@
+@startuml Diagrama_Casos_De_Uso_TeacherMakers
+
+title Diagrama de Casos de Uso - Principais Funcionalidades
+
+!theme plain
+left to right direction
+skinparam packageStyle rectangle
+skinparam roundcorner 8
+
+actor "Professor / Cursista" as Prof
+actor "Estudantes (Externo)" as Est
+actor "Administrador (Backend)" as Admin
+
+rectangle "Plataforma TeacherMakers" {
+  
+  ' =========================================
+  ' Casos de Uso do Ator: PROFESSOR/CURSISTA
+  ' =========================================
+  usecase "Realizar Cadastro e Login" as UC1
+  usecase "Consumir Aulas Teóricas\n(Vídeos e Resumos)" as UC2
+  usecase "Responder Quizzes de Fixação" as UC3
+  usecase "Executar Práticas Pedagógicas" as UC4
+  usecase "Submeter Evidências Obrigatórias\n(Diário de Bordo e Foto)" as UC5
+  usecase "Acessar Materiais de Apoio\n(Google Drive)" as UC6
+  usecase "Emitir Certificado de Conclusão" as UC7
+  
+  ' =========================================
+  ' Casos de Uso do Ator: ADMINISTRADOR
+  ' =========================================
+  usecase "Gerenciar Conteúdo Pedagógico\n(Módulos, Aulas, Quizzes e Práticas)" as UC8
+  
+  ' =========================================
+  ' Casos de Uso Internos (Automação do Sistema)
+  ' =========================================
+  usecase "Validar e Registrar Progresso\n(Bloqueio/Desbloqueio de Etapas)" as UC9
+  usecase "Validar Submissão de Evidências" as UC10
+  usecase "Gerar e Autenticar Certificado" as UC11
+  
+  ' --- Relacionamentos do Professor ---
+  Prof --> UC1
+  Prof --> UC2
+  Prof --> UC3
+  Prof --> UC4
+  Prof --> UC5
+  Prof --> UC6
+  Prof --> UC7
+  
+  ' --- Relacionamentos do Administrador ---
+  Admin --> UC8
+  
+  ' --- Relacionamentos dos Estudantes (Externos) ---
+  UC4 <-- Est : "Recebe e Valida a Prática"
+
+
+  ' --- Dependências (Includes) entre Usuário e Sistema ---
+  ' Quando o aluno consome aula ou faz quiz, o sistema valida e registra o progresso
+  UC2 ..> UC9 : <<include>>
+  UC3 ..> UC9 : <<include>>
+  
+  ' Quando o aluno submete evidências, o sistema as valida e depois libera o progresso
+  UC5 ..> UC10 : <<include>>
+  UC10 ..> UC9 : <<include>>
+  
+  ' Quando o aluno emite o certificado, o sistema tem que gerar o código de autenticação
+  UC7 ..> UC11 : <<include>>
+}
+
+@enduml

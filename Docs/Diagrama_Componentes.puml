@@ -1,0 +1,77 @@
+@startuml Diagrama_Componentes_TeacherMakers
+
+title Diagrama de Componentes - TeacherMakers
+
+!theme plain
+skinparam componentStyle uml2
+skinparam linetype ortho
+skinparam roundcorner 8
+
+package "Frontend (Cliente Web)" {
+  [Interface de Usuário\n(HTML/CSS/JS)] as UI
+  [Gerenciador de Armazenamento\n(localStorage/sessionStorage)] as Storage
+  [Cliente API\n(api.js)] as ApiClient
+
+  UI --> Storage : "Lê/Grava Tokens e Sessão"
+  UI --> ApiClient : "Delega Requisições"
+}
+
+package "Backend (Node.js + Express)" {
+  [Roteador\n(Routes)] as Router
+  
+  component "Middlewares" {
+    [AuthMiddleware\n(Validação JWT)] as AuthMid
+    [ErrorHandler\n(Tratamento de Erros)] as ErrMid
+  }
+
+  component "Controllers (Controladores)" {
+    [AuthController] as AuthCtrl
+    [ContentController] as ContentCtrl
+    [ProgressController] as ProgCtrl
+  }
+
+  component "Services (Regras de Negócio)" {
+    [AuthService] as AuthSrv
+    [ContentService] as ContentSrv
+    [ProgressService] as ProgSrv
+  }
+
+  component "Models (Acesso a Dados)" {
+    [UserModel] as UserMod
+    [ContentModel] as ContentMod
+    [ProgressModel] as ProgMod
+  }
+  
+  Router --> AuthMid : "Verifica JWT nas Rotas Protegidas"
+  AuthMid --> AuthCtrl : "Encaminha"
+  AuthMid --> ContentCtrl : "Encaminha"
+  AuthMid --> ProgCtrl : "Encaminha"
+  
+  Router --> ErrMid : "Captura e padroniza falhas"
+  
+  AuthCtrl --> AuthSrv : "Delega lógica"
+  ContentCtrl --> ContentSrv : "Delega lógica"
+  ProgCtrl --> ProgSrv : "Delega lógica"
+  
+  AuthSrv --> UserMod : "Consulta/Persiste Dados"
+  ContentSrv --> ContentMod : "Consulta Dados"
+  ProgSrv --> ProgMod : "Consulta/Persiste Dados"
+}
+
+database "Banco de Dados" {
+  [SQLite Relacional\n(teacher_makers.db)] as DB
+}
+
+cloud "Sistemas Externos" {
+  [Google Drive\n(Arquivos e Projetos Práticos)] as GDrive
+}
+
+' --- Conexões entre as macroestruturas ---
+ApiClient ..> Router : "Requisições HTTP/REST"
+UserMod --> DB : "Queries SQL"
+ContentMod --> DB : "Queries SQL"
+ProgMod --> DB : "Queries SQL"
+
+UI ..> GDrive : "Redireciona para Materiais\n(Etapas de Prática)"
+
+@enduml

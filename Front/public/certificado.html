@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TeacherMakers — Painel do Professor." />
+  <title>Certificado - TeacherMakers</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="script/icons.js"></script>
+
+  <link rel="icon" href="img/favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4f46e5" />
+  <script src="script/theme.js"></script>
+</head>
+
+<body>
+
+  <div class="dashboard-wrapper">
+
+    <div class="main-column">
+
+      <header class="dash-header">
+        
+        <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Menu">
+        </button>
+
+        <div class="dash-greeting"></div>
+
+        <div class="avatar-wrap" id="avatar-wrap">
+          <button class="user-avatar-btn" id="avatar-btn" aria-haspopup="true" aria-expanded="false">
+            <div class="dash-header-user-info">
+              <p class="dash-header-user-name">Matheus</p>
+            </div>
+            <div class="user-avatar">M</div>
+            <span class="chevron-icon" id="chevron-icon"></span>
+          </button>
+
+          <div class="dropdown-menu" id="dropdown-menu" role="menu">
+            <a href="#" class="dropdown-item" id="di-profile">
+              <span id="di-icon-user"></span> Meu Perfil
+            </a>
+            <a href="#" class="dropdown-item" id="di-settings">
+              <span id="di-icon-settings"></span> Configurações
+            </a>
+            <div class="dropdown-divider"></div>
+            <label class="dropdown-toggle-label">
+              <span id="di-icon-moon"></span> Modo Escuro
+              <span class="toggle-switch">
+                <input type="checkbox" id="dark-mode-toggle" />
+                <span class="toggle-track"></span>
+              </span>
+            </label>
+            <div class="dropdown-divider"></div>
+            <a href="certificado.html" class="dropdown-item" id="di-certificado">
+              <span id="di-icon-certificado"></span> Certificado
+            </a>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item danger" id="di-logout">
+              <span id="di-icon-logout"></span> Sair
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="dashboard-content">
+
+        <section class="dash-section active" id="section-certificado">
+          <h2 class="dash-section-title">Certificado</h2>
+          <p class="dash-section-desc">Seu certificado ficará disponível ao final da formação.</p>
+          <div class="certificado-card animate-fade-in-up">
+            <div class="empty-state">
+              <span class="empty-icon" id="empty-icon-cert"></span>
+              <h3>Certificado bloqueado</h3>
+              <p>Complete todos os módulos da formação para desbloquear seu certificado.</p>
+              <div class="cert-requirements">
+                <div class="cert-req"><span class="cert-req-icon pending" id="req-icon-1"></span> Completar todos os módulos</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="script/api.js"></script>
+  <script src="script/certificado.js"></script>
+  <script src="script/sidebar.js"></script>
+  <script>injectSidebar('certificado');</script>
+</body>
+
+</html>
