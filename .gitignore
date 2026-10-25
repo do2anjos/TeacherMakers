@@ -31,3 +31,11 @@ db_dump.json
 Docs/*.docx
 Docs/*.pdf
 Docs/rendered_docs_padronizado/
+
+# Temporary Office files
+~$*
+
+# Generated Dossiers / Builds
+Dossie_de_Avaliacao_da_Qualidade/
+Dossie_Avaliacao_Qualidade/
+
