@@ -41,10 +41,19 @@ const TeacherMakersApi = {
         };
 
         const resposta = await fetch(`${URL_BASE}${endpoint}`, config);
-        const resultado = await resposta.json();
+        let resultado;
+        try {
+            resultado = await resposta.json();
+        } catch (_) {
+            throw new Error('A resposta do servidor não pôde ser interpretada.');
+        }
 
         if (!resposta.ok) {
-            throw new Error(resultado.erro || 'Erro na requisição');
+            throw new Error(resultado?.erro || 'Erro na requisição');
+        }
+
+        if (!resultado || resultado.sucesso !== true || !Object.prototype.hasOwnProperty.call(resultado, 'dados')) {
+            throw new Error('A resposta do servidor não confirmou a operação.');
         }
 
         return resultado.dados;
@@ -71,6 +80,10 @@ const TeacherMakersApi = {
     completeOnboarding: () => TeacherMakersApi.request('/auth/onboarding', {
         method: 'PATCH'
     }),
+    getDiagnostic: () => TeacherMakersApi.request('/diagnostic'),
+    submitDiagnostic: (answers) => TeacherMakersApi.request('/diagnostic/submit', {
+        method: 'POST', body: JSON.stringify({ answers })
+    }),
 
     getModulos: () => TeacherMakersApi.request('/content/modulos'),
 
@@ -81,6 +94,7 @@ const TeacherMakersApi = {
     getPraticaDetalhes: (praticaId) => TeacherMakersApi.request(`/content/praticas/${praticaId}`),
 
     getPraticas: (moduloId) => TeacherMakersApi.request(`/content/modulos/${moduloId}/praticas`),
+    getConquistas: () => TeacherMakersApi.request('/progress/conquistas'),
 
     concluirAula: (aulaId) => TeacherMakersApi.request(`/progress/aula/${aulaId}/complete`, {
         method: 'POST'

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pré-teste diagnóstico — TeacherMakers</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script/theme.js"></script>
+</head>
+<body class="diagnostic-page">
+  <main class="diagnostic-card" aria-labelledby="diagnostic-title">
+    <p class="diagnostic-kicker">Onboarding · Avaliação inicial</p>
+    <h1 id="diagnostic-title">Pré-teste de Cultura Maker e Pensamento Computacional</h1>
+    <p>Suas respostas registram uma linha de base. Elas não alteram seu progresso nas aulas.</p>
+    <div id="diagnostic-alert" role="alert" aria-live="assertive" hidden></div>
+    <section id="diagnostic-loading" role="status" aria-live="polite">Carregando o questionário…</section>
+    <form id="diagnostic-form" hidden>
+      <p id="diagnostic-progress" aria-live="polite"></p>
+      <fieldset>
+        <legend id="diagnostic-question" tabindex="-1"></legend>
+        <div id="diagnostic-options"></div>
+      </fieldset>
+      <div class="diagnostic-controls">
+        <button class="btn btn-outline" id="diagnostic-back" type="button">Voltar</button>
+        <button class="btn btn-primary" id="diagnostic-next" type="button">Próxima questão</button>
+        <button class="btn btn-primary" id="diagnostic-submit" type="submit" hidden>Concluir pré-teste</button>
+      </div>
+    </form>
+  </main>
+  <script src="script/api.js"></script>
+  <script src="script/pre-teste.js"></script>
+</body>
+</html>

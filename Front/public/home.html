@@ -109,15 +109,74 @@
                 </div>
               </aside>
 
-              <div class="modules-column animate-fade-in-up" style="animation-delay:.1s;">
+              <div class="home-learning-column">
                 
-                <div class="trail-header" style="margin-bottom: 1.5rem;">
-                  <h2>Sua Jornada de Aprendizado</h2>
-                  <p>Acesse os conteúdos dos módulos e aulas diretamente por aqui.</p>
+                <!-- Div de Pré-teste (Pendente: Vermelho | Concluído: Verde) -->
+                <section id="diagnostic-summary" class="diagnostic-summary is-pending" data-status="pending" aria-labelledby="diagnostic-summary-title">
+                  <div class="diagnostic-summary-copy">
+                    <div class="diagnostic-summary-badge-line">
+                      <span class="diagnostic-summary-kicker">Avaliação Inicial</span>
+                      <span id="diagnostic-summary-status" class="diagnostic-status" role="status" aria-live="polite">Pendente</span>
+                    </div>
+                    <h2 id="diagnostic-summary-title">Pré-teste de Cultura Maker</h2>
+                    <p id="diagnostic-summary-description">Registre sua linha de base diagnóstica. O pré-teste não altera seu progresso nas aulas.</p>
+                  </div>
+                  <div class="diagnostic-summary-action">
+                    <a id="diagnostic-summary-link" class="diagnostic-summary-link" href="pre-teste.html">
+                      <span id="diagnostic-summary-link-text">Iniciar pré-teste</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path></svg>
+                    </a>
+                  </div>
+                </section>
+
+                <!-- Setas de navegação: passa de class="modules-column animate-fade-in-up" para class="achievement-panel" -->
+                <nav class="dashboard-carousel-nav" aria-label="Navegação de painéis">
+                  <button id="dashboard-panel-previous" class="dashboard-carousel-arrow" type="button" aria-label="Mostrar trilha de aprendizado" disabled>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+                  </button>
+                  <span id="dashboard-panel-position" class="dashboard-carousel-position" aria-live="polite">Jornada de Aprendizado · 1 de 2</span>
+                  <button id="dashboard-panel-next" class="dashboard-carousel-arrow" type="button" aria-label="Mostrar conquistas maker">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+                  </button>
+                </nav>
+
+                <!-- Viewport do Carrossel -->
+                <div class="dashboard-carousel-viewport" id="dashboard-carousel-viewport">
+                  <div class="dashboard-carousel-track" id="dashboard-carousel-track">
+                    
+                    <!-- Painel 1: class="modules-column animate-fade-in-up" -->
+                    <section class="modules-column dashboard-carousel-panel animate-fade-in-up" id="panel-modules" aria-labelledby="journey-heading">
+                      <div class="trail-header" style="margin-bottom: 1.5rem;">
+                        <h2 id="journey-heading">Sua Jornada de Aprendizado</h2>
+                        <p>Acesse os conteúdos dos módulos e aulas diretamente por aqui.</p>
+                      </div>
+
+                      <div class="syllabus-list" id="home-modules-grid">
+                      </div>
+                    </section>
+
+                    <!-- Painel 2: class="achievement-panel" -->
+                    <section class="achievement-panel dashboard-carousel-panel" id="panel-achievements" aria-labelledby="achievement-heading" aria-hidden="true" inert>
+                      <div class="trail-header" style="margin-bottom: 1.5rem;">
+                        <div class="achievement-header-content">
+                          <div>
+                            <h2 id="achievement-heading">Conquistas Maker</h2>
+                            <p>Desbloqueadas pelas práticas pedagógicas confirmadas no seu percurso.</p>
+                          </div>
+                          <div class="achievement-summary-pill" id="achievement-summary-pill">
+                            <span class="star-icon" aria-hidden="true">✦</span>
+                            <span id="achievement-count-text">0 de 2 desbloqueadas</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="achievement-grid" id="achievement-list">
+                      </div>
+                    </section>
+
+                  </div>
                 </div>
 
-                <div class="syllabus-list" id="home-modules-grid">
-                </div>
               </div>
 
             </div>

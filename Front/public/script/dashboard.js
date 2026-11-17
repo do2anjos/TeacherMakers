@@ -28,6 +28,7 @@ function initDashboardIcons() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     initDashboardIcons();
+    initializeDashboardCarousel();
 
     
     const user = JSON.parse(localStorage.getItem('tm_user'));
@@ -35,6 +36,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = 'Login.html';
         return;
     }
+
+    loadDiagnosticSummary();
 
     
     const greetingTitle = document.querySelector('.dash-greeting-title');
@@ -53,11 +56,173 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderStats(modulos);
         renderHomeModulesGrid(modulos);
         updateContinueLearning(modulos);
+
+        try {
+            const conquistas = await TeacherMakersApi.getConquistas();
+            renderAchievements(conquistas);
+        } catch (errConquistas) {
+            console.warn("Conquistas não carregadas do backend, exibindo base:", errConquistas);
+            renderAchievements([
+                { codigo: 'primeiro-circuito', nome: 'Primeiro Circuito', descricao: 'Concluiu a primeira prática de circuitos.', desbloqueado: false },
+                { codigo: 'pensador-computacional', nome: 'Pensador Computacional', descricao: 'Concluiu práticas dos quatro pilares do pensamento computacional.', desbloqueado: false }
+            ]);
+        }
     } catch (erro) {
         console.error("Erro no dashboard:", erro);
         alert("Ocorreu um erro no carregamento do painel: " + erro.message);
     }
 });
+
+function initializeDashboardCarousel() {
+    const track = document.getElementById('dashboard-carousel-track');
+    const panels = track ? Array.from(track.querySelectorAll('.dashboard-carousel-panel')) : [];
+    const previous = document.getElementById('dashboard-panel-previous');
+    const next = document.getElementById('dashboard-panel-next');
+    const position = document.getElementById('dashboard-panel-position');
+    if (!track || panels.length < 2 || !previous || !next) return;
+
+    let activePanel = 0;
+    const titles = ['Jornada de Aprendizado', 'Conquistas Maker'];
+
+    const showPanel = (index) => {
+        activePanel = Math.max(0, Math.min(index, panels.length - 1));
+        track.style.transform = `translateX(-${activePanel * 100}%)`;
+        panels.forEach((panel, panelIndex) => {
+            const isActive = panelIndex === activePanel;
+            panel.setAttribute('aria-hidden', String(!isActive));
+            panel.inert = !isActive;
+        });
+        previous.disabled = activePanel === 0;
+        next.disabled = activePanel === panels.length - 1;
+        if (position) {
+            position.textContent = `${titles[activePanel] || 'Painel'} · ${activePanel + 1} de ${panels.length}`;
+        }
+        previous.setAttribute('aria-label', activePanel === 1 ? 'Voltar para a Jornada de Aprendizado' : 'Mostrar painel anterior');
+        next.setAttribute('aria-label', activePanel === 0 ? 'Ver Conquistas Maker' : 'Mostrar próximo painel');
+    };
+
+    previous.addEventListener('click', () => showPanel(activePanel - 1));
+    next.addEventListener('click', () => showPanel(activePanel + 1));
+    showPanel(0);
+}
+
+async function loadDiagnosticSummary() {
+    const card = document.getElementById('diagnostic-summary');
+    const status = document.getElementById('diagnostic-summary-status');
+    const description = document.getElementById('diagnostic-summary-description');
+    const link = document.getElementById('diagnostic-summary-link');
+    const linkText = document.getElementById('diagnostic-summary-link-text');
+    if (!card || !status || !description || !link) return;
+
+    try {
+        const attempt = await TeacherMakersApi.getDiagnostic();
+        const isCompleted = attempt && attempt.status === 'completed';
+
+        card.dataset.status = isCompleted ? 'completed' : 'pending';
+        card.classList.toggle('is-completed', isCompleted);
+        card.classList.toggle('is-pending', !isCompleted);
+        card.classList.remove('is-unavailable');
+
+        status.textContent = isCompleted ? 'Concluído' : 'Pendente';
+        if (isCompleted) {
+            const acertos = (attempt.pontuacao !== null && attempt.pontuacao !== undefined) ? ` (${attempt.pontuacao}/${attempt.totalQuestoes || 10} acertos)` : '';
+            description.textContent = `Sua linha de base diagnóstica já foi registrada com sucesso${acertos}. O pré-teste não altera seu progresso nas aulas.`;
+        } else {
+            description.textContent = 'Registre sua linha de base diagnóstica. O pré-teste não altera seu progresso nas aulas.';
+        }
+
+        if (linkText) linkText.textContent = isCompleted ? 'Ver resultado' : 'Iniciar pré-teste';
+        link.href = isCompleted ? 'pre-teste.html?view=result' : 'pre-teste.html';
+        link.setAttribute('aria-label', isCompleted ? 'Consultar resultado do pré-teste' : 'Iniciar pré-teste diagnóstico');
+    } catch (error) {
+        if (error.message && (error.message.includes('não foi configurado') || error.message.includes('indisponível'))) {
+            card.dataset.status = 'unavailable';
+            card.classList.remove('is-pending', 'is-completed');
+            card.classList.add('is-unavailable');
+            status.textContent = 'Indisponível';
+            description.textContent = error.message;
+            if (linkText) linkText.textContent = 'Indisponível';
+        } else {
+            card.dataset.status = 'pending';
+            card.classList.add('is-pending');
+            card.classList.remove('is-completed', 'is-unavailable');
+            status.textContent = 'Pendente';
+            description.textContent = 'Registre sua linha de base diagnóstica. O pré-teste não altera seu progresso nas aulas.';
+            if (linkText) linkText.textContent = 'Iniciar pré-teste';
+            link.href = 'pre-teste.html';
+        }
+    }
+}
+
+function renderAchievements(conquistas) {
+    const list = document.getElementById('achievement-list');
+    const countEl = document.getElementById('achievement-count-text');
+    if (!list || !Array.isArray(conquistas)) return;
+
+    const unlockedCount = conquistas.filter(c => c.desbloqueado).length;
+    if (countEl) {
+        countEl.textContent = `${unlockedCount} de ${conquistas.length} desbloqueadas`;
+    }
+
+    list.innerHTML = '';
+    conquistas.forEach((badge) => {
+        const item = document.createElement('div');
+        item.className = `achievement-card ${badge.desbloqueado ? 'is-unlocked' : 'is-locked'}`;
+        item.setAttribute('role', 'article');
+        item.setAttribute('aria-label', `${badge.nome}: ${badge.desbloqueado ? 'desbloqueada' : 'bloqueada'}. ${badge.descricao}`);
+
+        let iconSvg = '';
+        if (badge.codigo === 'primeiro-circuito') {
+            iconSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`;
+        } else if (badge.codigo === 'pensador-computacional') {
+            iconSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11a2 2 0 0 1-2 2H8a2 2 0 0 0-2 2v1"></path><path d="M18 10a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-1"></path><circle cx="12" cy="18" r="3"></circle></svg>`;
+        } else {
+            iconSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>`;
+        }
+
+        const chipHtml = badge.desbloqueado
+            ? `<span class="achievement-badge-pill unlocked">
+                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                 Desbloqueada
+               </span>`
+            : `<span class="achievement-badge-pill locked">
+                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                 Bloqueada
+               </span>`;
+
+        let footerHtml = '';
+        if (badge.desbloqueado) {
+            let dataFormatada = 'Prática confirmada';
+            if (badge.dataConquista) {
+                try {
+                    const d = new Date(badge.dataConquista);
+                    dataFormatada = `Conquistada em ${d.toLocaleDateString('pt-BR')}`;
+                } catch (_) {}
+            }
+            footerHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>${dataFormatada}</span>`;
+        } else {
+            footerHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> <span>Conclua práticas para desbloquear</span>`;
+        }
+
+        item.innerHTML = `
+            <div>
+                <div class="achievement-card-top">
+                    <div class="achievement-emblem">
+                        ${iconSvg}
+                    </div>
+                    ${chipHtml}
+                </div>
+                <h3 class="achievement-title">${badge.nome}</h3>
+                <p class="achievement-desc">${badge.descricao}</p>
+            </div>
+            <div class="achievement-card-footer">
+                ${footerHtml}
+            </div>
+        `;
+
+        list.appendChild(item);
+    });
+}
 
 function renderStats(modulos) {
     const user = JSON.parse(localStorage.getItem('tm_user')) || {};
