@@ -5,10 +5,13 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
+    "dev": "nodemon --config nodemon.json src/server.js",
     "db:init": "node -e \"require('./src/config/database')\"",
     "db:seed": "node src/utils/seeder.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "uploads:migrate:dry": "node src/utils/migrateUploads.js",
+    "uploads:migrate:apply": "node src/utils/migrateUploads.js --apply",
+    "test": "jest --runInBand",
+    "test:coverage": "jest --runInBand --coverage"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +33,8 @@
     "winston": "^3.19.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "jest": "^30.5.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.3.2"
   }
 }

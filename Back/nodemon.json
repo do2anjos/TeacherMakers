@@ -1,0 +1,15 @@
+{
+  "watch": ["src"],
+  "ext": "js,cjs,mjs",
+  "ignore": [
+    "docs/**",
+    "coverage/**",
+    "uploads/**",
+    "logs/**",
+    "**/*.sqlite",
+    "**/*.sqlite-*",
+    "**/*.log",
+    "**/*.tmp"
+  ],
+  "delay": "5000ms"
+}

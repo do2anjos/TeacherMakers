@@ -36,8 +36,9 @@ const contentController = {
 
   getPraticasByModulo: async (req, res, next) => {
     try {
+      const userId = req.user.id;
       const { moduloId } = req.params;
-      const praticas = await contentService.getPraticasByModulo(moduloId);
+      const praticas = await contentService.getPraticasByModulo(userId, moduloId);
       return responseHelper.sucesso(res, praticas);
     } catch (erro) {
       next(erro);
@@ -46,8 +47,9 @@ const contentController = {
 
   getPraticaDetalhes: async (req, res, next) => {
     try {
+      const userId = req.user.id;
       const { id } = req.params;
-      const pratica = await contentService.getPraticaDetalhes(id);
+      const pratica = await contentService.getPraticaDetalhes(userId, id);
       return responseHelper.sucesso(res, pratica);
     } catch (erro) {
       next(erro);

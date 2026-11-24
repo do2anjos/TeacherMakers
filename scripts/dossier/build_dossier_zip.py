@@ -4,7 +4,8 @@ import zipfile
 import subprocess
 import win32com.client
 
-BASE_DIR = r"c:\Users\Do2anjos\Desktop\T.I\TeacherMakers"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ANALISE_DIR = os.path.join(BASE_DIR, "analise")
 OUTPUT_DIR = os.path.join(BASE_DIR, "Dossie_de_Avaliacao_da_Qualidade")
 ZIP_NAME = os.path.join(BASE_DIR, "Dossie_de_Avaliacao_da_Qualidade_TeacherMakers.zip")
 

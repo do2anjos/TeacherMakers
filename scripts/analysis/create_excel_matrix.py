@@ -1,3 +1,4 @@
+import os
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -168,7 +169,9 @@ def build_excel_matrix():
     for col_idx, width in col_widths.items():
         ws.column_dimensions[get_column_letter(col_idx)].width = width
 
-    out_path = r'c:\Users\Do2anjos\Desktop\T.I\TeacherMakers\Matriz_Consolidada_de_Problemas.xlsx'
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    out_path = os.path.join(project_root, 'analise', 'matrizes', 'Matriz_Consolidada_de_Problemas.xlsx')
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
     wb.save(out_path)
     print('Planilha gerada com sucesso:', out_path)
 

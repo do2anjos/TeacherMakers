@@ -2,13 +2,23 @@ services:
   # Backend Service
   - type: web
     name: teachermakers-back
-    env: node
-    plan: free
+    runtime: node
+    plan: starter
+    disk:
+      name: teachermakers-data
+      mountPath: /data
+      sizeGB: 1
     buildCommand: npm install && cd Back && npm install
     startCommand: cd Back && npm start
     envVars:
       - key: NODE_ENV
         value: production
+      - key: DATA_DIR
+        value: /data
+      - key: UPLOAD_MAX_BYTES
+        value: 10485760
+      - key: REQUIRE_DIAGNOSTIC_PRETEST
+        value: true
       - key: PORT
         value: 5000
       - key: JWT_SECRET

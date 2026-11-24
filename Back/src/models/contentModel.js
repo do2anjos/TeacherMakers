@@ -50,6 +50,19 @@ const contentModel = {
     });
   },
 
+  findQuestaoById: (questaoId) => {
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT q.id, quiz.aula_id, a.modulo_id
+        FROM questoes q
+        JOIN quizzes quiz ON quiz.id = q.quiz_id
+        JOIN aulas a ON a.id = quiz.aula_id
+        WHERE q.id = ?
+      `;
+      db.get(query, [questaoId], (err, row) => err ? reject(err) : resolve(row));
+    });
+  },
+
   findOpcoesByQuestaoId: (questaoId) => {
     return new Promise((resolve, reject) => {
       db.all('SELECT * FROM opcoes WHERE questoes_id = ? ORDER BY ordem ASC', [questaoId], (err, rows) => {
@@ -80,7 +93,7 @@ const contentModel = {
   findPraticaById: (id) => {
     return new Promise((resolve, reject) => {
       const query = `
-        SELECT p.*, m.titulo as modulo_titulo
+        SELECT p.*, m.titulo as modulo_titulo, m.ordem as modulo_ordem
         FROM praticas p
         JOIN modulos m ON m.id = p.modulo_id
         WHERE p.id = ?

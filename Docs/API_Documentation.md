@@ -110,3 +110,24 @@ A API segue o seguinte padrão de resposta:
   "stack": "Enviado apenas em modo development"
 }
 ```
+
+## Rotas V2 adicionadas
+
+### `POST /progress/pratica/finish`
+
+Requer JWT e `multipart/form-data` com `praticaId`, `diarioBordo` (mínimo de 100 caracteres) e `foto`. Formatos aceitos: JPG, PNG e WEBP, com validação de extensão, MIME e assinatura do conteúdo. O limite padrão é 10 MiB (`UPLOAD_MAX_BYTES`). O backend retorna `protocolo`, `evidenciaId`, `dataEnvio`, `progressoModulo`, `proximoPasso` e `novasConquistas` somente após a gravação transacional.
+
+### `GET /progress/conquistas`
+
+Retorna as conquistas maker conhecidas do usuário autenticado com estado `desbloqueado` e `dataConquista`. A API não recebe concessões do navegador.
+
+### `GET /diagnostic` e `POST /diagnostic/submit`
+
+Requerem JWT. O banco é carregado somente de `DIAGNOSTIC_QUESTIONS_FILE`; caminhos relativos são resolvidos a partir da pasta `Back/`. O JSON precisa declarar `metadata.status`, `metadata.version` e dez questões exclusivas, cada uma com opções A, B, C e D. A rota GET envia `versaoConteudo`, enunciados e opções, nunca o gabarito. A rota POST aceita dez pares `{ "questionId": "q1", "optionId": "A" }`, corrige e persiste no backend. A versão fica registrada junto da tentativa, e uma mudança de versão durante a tentativa retorna 409.
+
+Sem configuração, arquivo ausente ou JSON inválido, a API responde 503 com mensagem segura. Um banco aprovado (`metadata.status: "approved"`) pode ser carregado após validação. Um banco `draft` exige simultaneamente `NODE_ENV=development`, `DIAGNOSTIC_ALLOW_DRAFT_CONTENT=true` e o caminho explícito; o backend sempre bloqueia rascunhos em produção. O rascunho 0.1 atual é apenas para validação local e não deve ser configurado no Render. Veja `Back/docs/diagnostic-content-contract.md`.
+### `PATCH /auth/onboarding`
+
+O onboarding pode ser concluido sem tentativa diagnostica. O pre-teste registra uma linha de base e nao altera o progresso dos modulos nem condiciona o onboarding.
+
+As rotas de conteúdo e conclusão também aplicam as travas de acesso do módulo no backend; acesso a módulo bloqueado retorna 403.

@@ -8,6 +8,23 @@ function isIntroModule(modulo) {
   return modulo.id === 0 || modulo.titulo.toLowerCase().includes('introdução');
 }
 
+async function assertModuleAvailable(userId, moduleId) {
+  const modules = await contentModel.findAllModulos();
+  const moduleIndex = modules.findIndex((module) => Number(module.id) === Number(moduleId));
+  if (moduleIndex < 0) { const error = new Error('Módulo não encontrado.'); error.status = 404; throw error; }
+  const progress = await progressModel.getUserModulosProgress(userId);
+  const priorComplete = modules.slice(0, moduleIndex).every((module) => {
+    const row = progress.find((item) => Number(item.modulo_id) === Number(module.id));
+    return row?.status === 'concluido' && Number(row.percentual) === 100;
+  });
+  const currentProgress = progress.find((item) => Number(item.modulo_id) === Number(moduleId));
+  if (moduleIndex > 0 && !priorComplete && !(currentProgress?.status === 'concluido' && Number(currentProgress.percentual) === 100)) {
+    const error = new Error('Este módulo ainda está bloqueado. Conclua os pré-requisitos da trilha.');
+    error.status = 403;
+    throw error;
+  }
+}
+
 const contentService = {
   getModulosComProgresso: async (userId) => {
     const [modulos, user, aulaProgress, praticaProgress, allAulas, allPraticas] = await Promise.all([
@@ -30,6 +47,7 @@ const contentService = {
     }, {});
 
     let currentFoundGlobal = false;
+    let priorModulesComplete = true;
     const fullModulos = [];
 
     for (const m of modulos) {
@@ -47,7 +65,7 @@ const contentService = {
           titulo: aula.titulo,
           subtitulo: aula.subtitulo,
           descricao: aula.descricao,
-          status: (isIntro && user.onboarding_concluido) ? 'concluido' : (aulaProgressMap[aula.id] || 'pendente'),
+          status: aulaProgressMap[aula.id] || 'pendente',
           ordem: aula.ordem
         });
 
@@ -58,7 +76,7 @@ const contentService = {
             tipo: 'pratica',
             titulo: praticaVinculada.titulo,
             subtitulo: praticaVinculada.subtitulo,
-            status: (isIntro && user.onboarding_concluido) ? 'concluido' : (praticaProgressMap[praticaVinculada.id] || 'pendente'),
+            status: praticaProgressMap[praticaVinculada.id] || 'pendente',
             ordem: aula.ordem + 0.5
           });
         }
@@ -70,17 +88,20 @@ const contentService = {
           tipo: 'pratica',
           titulo: p.titulo,
           subtitulo: p.subtitulo,
-          status: (isIntro && user.onboarding_concluido) ? 'concluido' : (praticaProgressMap[p.id] || 'pendente'),
+          status: praticaProgressMap[p.id] || 'pendente',
           ordem: UNLINKED_PRATICA_ORDEM_BASE + p.id
         });
       });
 
       const totalItens = items.length;
       const itensConcluidos = items.filter(item => item.status === 'concluido').length;
-      const percentual = totalItens ? Math.round((itensConcluidos / totalItens) * 100) : (isIntro && user.onboarding_concluido ? 100 : 0);
+      const percentual = totalItens ? Math.round((itensConcluidos / totalItens) * 100) : 0;
+      const moduleComplete = percentual === 100;
+      const acesso = priorModulesComplete ? 'available' : 'locked';
+      priorModulesComplete = priorModulesComplete && moduleComplete;
 
       const trilhaOrdenada = items.sort((a, b) => a.ordem - b.ordem).map(item => {
-        const isCurrent = !currentFoundGlobal && item.status !== 'concluido';
+        const isCurrent = acesso === 'available' && !currentFoundGlobal && item.status !== 'concluido';
         if (isCurrent) currentFoundGlobal = true;
         return { ...item, isCurrent };
       });
@@ -88,6 +109,8 @@ const contentService = {
       fullModulos.push({
         ...m,
         isIntro,
+        acesso,
+        bloqueado: acesso === 'locked',
         status: percentual === 100 ? 'concluido' : (percentual > 0 ? 'em_andamento' : 'pendente'),
         percentual,
         totalItens,
@@ -100,6 +123,7 @@ const contentService = {
   },
 
   getAulasByModulo: async (userId, moduloId) => {
+    await assertModuleAvailable(userId, moduloId);
     const [aulas, progress] = await Promise.all([
       contentModel.findAulasByModulo(moduloId),
       progressModel.getUserAulasProgress(userId)
@@ -128,6 +152,7 @@ const contentService = {
       erro.status = 404;
       throw erro;
     }
+    await assertModuleAvailable(userId, aula.modulo_id);
 
     const progressoAula = progress.find(p => p.aula_id === parseInt(aulaId));
     const status = progressoAula ? progressoAula.status : 'pendente';
@@ -151,7 +176,8 @@ const contentService = {
     };
   },
 
-  getPraticasByModulo: async (moduloId) => {
+  getPraticasByModulo: async (userId, moduloId) => {
+    await assertModuleAvailable(userId, moduloId);
     const praticas = await contentModel.findPraticasByModulo(moduloId);
 
     const praticasComEtapas = await Promise.all(praticas.map(async (p) => {
@@ -162,18 +188,21 @@ const contentService = {
     return praticasComEtapas;
   },
 
-  getPraticaDetalhes: async (id) => {
+  getPraticaDetalhes: async (userId, id) => {
     const pratica = await contentModel.findPraticaById(id);
     if (!pratica) {
       const erro = new Error('Prática não encontrada.');
       erro.status = 404;
       throw erro;
     }
+    await assertModuleAvailable(userId, pratica.modulo_id);
 
     const etapas = await contentModel.findEtapasByPratica(id);
 
     return { ...pratica, etapas };
   }
 };
+
+contentService.assertModuleAvailable = assertModuleAvailable;
 
 module.exports = contentService;

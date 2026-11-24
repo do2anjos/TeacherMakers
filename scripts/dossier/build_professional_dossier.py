@@ -26,7 +26,8 @@ from docx.oxml import parse_xml
 import win32com.client
 
 # ── Paths ──
-BASE = r"c:\Users\Do2anjos\Desktop\T.I\TeacherMakers"
+BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ANALISE_DIR = os.path.join(BASE, "analise")
 OUT = os.path.join(BASE, "Dossie_Avaliacao_Qualidade")
 ZIP_PATH = os.path.join(BASE, "Dossie_Avaliacao_Qualidade.zip")
 

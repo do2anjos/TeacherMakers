@@ -36,37 +36,70 @@ Esta versão marca o **Ponto Zero (Baseline)** do projeto, consolidando a arquit
 
 ```text
 TeacherMakers/
-├── Back/                      # Servidor backend (API REST)
+├── .github/
+│   └── workflows/             # CI (testes backend)
+├── analise/                   # Materiais de análise e qualidade (organizados por finalidade)
+│   ├── dados/                 # Bases de respostas coletadas (.xlsx)
+│   ├── instrumentos/          # Fichas e instrumentos de avaliação
+│   ├── protocolos/            # Protocolos e roteiros de pesquisa/usabilidade
+│   ├── matrizes/              # Matrizes de avaliação e problemas
+│   ├── relatorios/            # Relatórios e triangulação de resultados
+│   ├── evidencias/            # Cadernos/evidências consolidadas
+│   └── entregaveis/           # Pacotes/artefatos de entrega (ex.: ZIP)
+├── Back/                      # Backend (API REST Node.js/Express)
+│   ├── docs/                  # Documentação específica do backend (contratos, drafts)
 │   ├── src/
-│   │   ├── config/            # Conexão com banco de dados, Swagger e Logger
-│   │   ├── controllers/       # Controladores de rotas (Auth, Content, Progress)
-│   │   ├── middlewares/       # Autenticação JWT, tratamento de erros, uploads
-│   │   ├── models/            # Camada de persistência (User, Content, Progress)
-│   │   ├── routes/            # Definição das rotas da API
-│   │   ├── services/          # Regras de negócio da plataforma
-│   │   └── utils/             # Scripts utilitários e Seeder do banco
+│   │   ├── config/            # Banco, logger, storage, swagger
+│   │   ├── controllers/       # Controladores HTTP
+│   │   ├── middlewares/       # Auth, tratamento de erros, etc.
+│   │   ├── migrations/        # Migrations de schema/evolução
+│   │   ├── models/            # Camada de persistência
+│   │   ├── routes/            # Definição de rotas
+│   │   ├── services/          # Regras de negócio
+│   │   └── utils/             # Utilitários de runtime/manutenção (seed, uploads, helpers)
+│   ├── tests/
+│   │   ├── integration/       # Testes automatizados de integração (Jest/Supertest)
+│   │   ├── manual/            # Scripts de teste/validação manual
+│   │   └── legacy/            # Scripts de teste legados preservados
+│   ├── jest.config.js
+│   ├── nodemon.json
 │   └── package.json
-├── Front/                     # Interface do usuário (Web Client)
+├── Docs/                      # Documentação geral do sistema e arquitetura
+│   ├── Alterações/            # Histórico/visão geral de implementações
+│   ├── API_Documentation.md
+│   ├── Elicitacao_Requisitos.md
+│   ├── Diagrama_Atividades.puml
+│   ├── Diagrama_Casos_De_Uso.puml
+│   ├── Diagrama_Componentes.puml
+│   └── MER_TeacherMakers.puml
+├── Dossie_Avaliacao_Qualidade/ # Dossiê formal, evidências e auditorias de qualidade
+├── Front/                     # Frontend (Web Client)
 │   ├── public/
-│   │   ├── script/            # Scripts de autenticação, dashboard, aulas, práticas e tema
-│   │   ├── style.css          # Estilização global e componentes
-│   │   ├── Login.html         # Página de login
-│   │   ├── Cadastro.html      # Página de registro
-│   │   ├── home.html          # Dashboard da trilha de aprendizagem
-│   │   ├── aula.html          # Sala de aula (vídeo, resumo, quiz)
-│   │   ├── praticas.html      # Roteiros práticos e envio de evidências
-│   │   └── certificado.html   # Emissão e validação de certificados
+│   │   ├── img/               # Recursos visuais
+│   │   ├── script/            # Scripts da interface
+│   │   ├── style.css
+│   │   └── *.html             # Páginas da aplicação
 │   └── package.json
-├── Docs/                      # Especificações e Engenharia de Software
-│   ├── API_Documentation.md   # Especificação detalhada dos endpoints
-│   ├── Elicitacao_Requisitos.md # Requisitos Funcionais (RF) e Não Funcionais (RNF)
-│   ├── Diagrama_Atividades.puml   # Diagrama PlantUML de Atividades
-│   ├── Diagrama_Casos_De_Uso.puml # Diagrama PlantUML de Casos de Uso
-│   ├── Diagrama_Componentes.puml  # Diagrama PlantUML de Componentes
-│   └── MER_TeacherMakers.puml     # Modelo Entidade-Relacionamento
+├── scripts/                   # Scripts operacionais e de apoio
+│   ├── analysis/              # Análises e processamento de dados/matrizes
+│   ├── dossier/               # Geração/consolidação de dossiês e entregáveis
+│   └── start-local.js         # Orquestrador de execução local (frontend + backend)
+├── .gitignore
 ├── package.json               # Orquestrador de scripts na raiz
-└── render.yaml                # Configuração para deploy
+├── package-lock.json
+└── render.yaml                # Configuração de deploy (Render)
 ```
+
+**Governança de documentação (visão geral):**
+- `Docs/`: documentação técnica/arquitetural e requisitos do sistema.
+- `Back/docs/`: documentação específica do backend (ex.: contratos e conteúdos diagnósticos em draft).
+- `analise/`: insumos, dados, instrumentos, protocolos, matrizes, relatórios e evidências de análise/qualidade.
+- `Dossie_Avaliacao_Qualidade/`: dossiê formal e registros de auditoria/avaliação (preservado conforme política do repositório).
+
+**Testes e scripts:**
+- Testes automatizados backend: `Back/tests/integration/` (Jest/Supertest, configurado por `Back/jest.config.js`).
+- Scripts manuais/legados de teste: `Back/tests/manual/` e `Back/tests/legacy/` (preservados para uso controlado).
+- Scripts operacionais e de apoio: `scripts/` (`start-local.js`, `analysis/`, `dossier/`). Alguns scripts de análise/dossiê podem exigir ajuste de entradas/ambiente conforme os dados disponíveis em `analise/`.
 
 ---
 

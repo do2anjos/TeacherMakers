@@ -1,9 +1,13 @@
+import os
 import openpyxl
 import statistics
 import math
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ANALISE_DADOS = os.path.join(PROJECT_ROOT, 'analise', 'dados')
+
 def analyze_ueq():
-    wb = openpyxl.load_workbook(r'c:\Users\Do2anjos\Desktop\T.I\TeacherMakers\Questionário de Experiência do Usuário (UEQ-S) (respostas).xlsx')
+    wb = openpyxl.load_workbook(os.path.join(ANALISE_DADOS, 'Questionário de Experiência do Usuário (UEQ-S) (respostas).xlsx'))
     ws = wb.active
     rows = list(ws.iter_rows(values_only=True))[1:]
 

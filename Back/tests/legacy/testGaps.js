@@ -1,7 +1,6 @@
-require('dotenv').config();
-const authService = require('../services/authService');
-const progressService = require('../services/progressService');
-const contentService = require('../services/contentService');
+const authService = require('../../src/services/authService');
+const progressService = require('../../src/services/progressService');
+const contentService = require('../../src/services/contentService');
 
 async function testGapsFix() {
     try {
@@ -17,7 +16,7 @@ async function testGapsFix() {
         const userId = login.usuario.id;
 
         console.log('\n--- 2. TESTANDO ONBOARDING ---');
-        const userModel = require('../models/userModel');
+        const userModel = require('../../src/models/userModel');
         await userModel.completeOnboarding(userId);
         const updatedUser = await userModel.findById(userId);
         console.log('Onboarding concluído:', updatedUser.onboarding_concluido === 1 ? 'SIM' : 'NÃO');

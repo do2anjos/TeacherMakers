@@ -71,6 +71,20 @@ const progressModel = {
     });
   },
 
+  getQuizAnswersForAula: (userId, aulaId) => {
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT q.id AS questao_id, COALESCE(MAX(r.acertou), 0) AS acertou
+        FROM quizzes quiz
+        JOIN questoes q ON q.quiz_id = quiz.id
+        LEFT JOIN resposta_quiz r ON r.questao_id = q.id AND r.usuario_id = ?
+        WHERE quiz.aula_id = ?
+        GROUP BY q.id
+      `;
+      db.all(query, [userId, aulaId], (err, rows) => err ? reject(err) : resolve(rows));
+    });
+  },
+
   saveRespostaQuiz: (userId, questaoId, opcaoId, acertou) => {
     return new Promise((resolve, reject) => {
       const query = `

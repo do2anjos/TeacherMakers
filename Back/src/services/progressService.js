@@ -1,16 +1,41 @@
 const progressModel = require('../models/progressModel');
 const contentModel = require('../models/contentModel');
-const logger = require('../config/logger');
+const contentService = require('./contentService');
+const db = require('../config/database');
+const storage = require('../config/storage');
+const fs = require('fs/promises');
+const path = require('path');
+const crypto = require('crypto');
 
 const CERTIFICATE_HOURS = 40;
 
 const progressService = {
+  listarConquistas: async (userId) => {
+    const earned = await queryAll(db, 'SELECT codigo, data_conquista FROM conquistas_usuario WHERE usuario_id = ?', [userId]);
+    const earnedByCode = new Map(earned.map((row) => [row.codigo, row.data_conquista]));
+    return [
+      { codigo: 'primeiro-circuito', nome: 'Primeiro Circuito', descricao: 'Concluiu a primeira prática de circuitos.' },
+      { codigo: 'pensador-computacional', nome: 'Pensador Computacional', descricao: 'Concluiu práticas dos quatro pilares do pensamento computacional.' }
+    ].map((badge) => ({ ...badge, desbloqueado: earnedByCode.has(badge.codigo), dataConquista: earnedByCode.get(badge.codigo) || null }));
+  },
+
   completarAula: async (userId, aulaId) => {
     const aula = await contentModel.findAulaById(aulaId);
     if (!aula) {
       const erro = new Error('Aula não encontrada.');
       erro.status = 404;
       throw erro;
+    }
+    await contentService.assertModuleAvailable(userId, aula.modulo_id);
+
+    const quizQuestions = await contentModel.findQuizByAulaId(aulaId);
+    if (quizQuestions.length) {
+      const answers = await progressModel.getQuizAnswersForAula(userId, aulaId);
+      if (answers.length !== quizQuestions.length || answers.some((answer) => !answer.acertou)) {
+        const erro = new Error('Responda corretamente a todas as questões do quiz antes de concluir a aula.');
+        erro.status = 403;
+        throw erro;
+      }
     }
 
     await progressModel.upsertAulaProgress(userId, aulaId, 'concluido', true);
@@ -19,12 +44,13 @@ const progressService = {
     return { aulaId, moduloId: aula.modulo_id, status: 'concluido' };
   },
 
-  recalcularModulo: async (userId, moduloId) => {
-    const [aulasTotais, praticasTotais, aulasProgresso, praticasProgresso] = await Promise.all([
-      contentModel.findAulasByModulo(moduloId),
-      contentModel.findPraticasByModulo(moduloId),
-      progressModel.getUserAulasProgress(userId),
-      progressModel.getUserPraticasProgress(userId)
+  recalcularModulo: async (userId, moduloId, executor = db) => {
+    const [aulasTotais, praticasTotais, aulasProgresso, praticasProgresso, modulos] = await Promise.all([
+      queryAll(executor, 'SELECT id FROM aulas WHERE modulo_id = ?', [moduloId]),
+      queryAll(executor, 'SELECT id FROM praticas WHERE modulo_id = ?', [moduloId]),
+      queryAll(executor, 'SELECT aula_id, status FROM progresso_aula WHERE usuario_id = ?', [userId]),
+      queryAll(executor, 'SELECT pratica_id, status FROM progresso_pratica WHERE usuario_id = ?', [userId]),
+      queryAll(executor, 'SELECT id, ordem FROM modulos ORDER BY ordem ASC', [])
     ]);
 
     const aulasModuloIds = aulasTotais.map(a => a.id);
@@ -42,12 +68,33 @@ const progressService = {
     const percentual = totalItens ? Math.round((totalConcluido / totalItens) * 100) : 0;
     const status = percentual === 100 ? 'concluido' : (percentual > 0 ? 'em_andamento' : 'pendente');
 
-    await progressModel.upsertModuloProgress(userId, moduloId, status, percentual);
+    await queryRun(executor, `
+      INSERT INTO progresso_modulo (usuario_id, modulo_id, status, percentual, estado_acesso)
+      VALUES (?, ?, ?, ?, 'bloqueado')
+      ON CONFLICT(usuario_id, modulo_id) DO UPDATE SET
+        status = excluded.status,
+        percentual = excluded.percentual,
+        data_conclusao = CASE WHEN excluded.status = 'concluido' THEN CURRENT_TIMESTAMP ELSE data_conclusao END
+    `, [userId, moduloId, status, percentual]);
 
-    logger.info(`Progresso do Módulo ${moduloId} atualizado para ${percentual}% (Usuário: ${userId})`);
+    let previousComplete = true;
+    for (const modulo of modulos) {
+      const access = previousComplete ? 'available' : 'locked';
+      await queryRun(executor, `
+        INSERT INTO progresso_modulo (usuario_id, modulo_id, status, percentual, estado_acesso)
+        VALUES (?, ?, 'pendente', 0, ?)
+        ON CONFLICT(usuario_id, modulo_id) DO UPDATE SET estado_acesso = excluded.estado_acesso
+      `, [userId, modulo.id, access]);
+      const row = await queryGet(executor, 'SELECT status, percentual FROM progresso_modulo WHERE usuario_id = ? AND modulo_id = ?', [userId, modulo.id]);
+      previousComplete = !!row && row.status === 'concluido' && row.percentual === 100;
+    }
+
   },
 
   submeterRespostaQuiz: async (userId, questaoId, opcaoId) => {
+    const questao = await contentModel.findQuestaoById(questaoId);
+    if (!questao) { const erro = new Error('Questão não encontrada.'); erro.status = 404; throw erro; }
+    await contentService.assertModuleAvailable(userId, questao.modulo_id);
     const opcao = await progressModel.findOpcaoById(opcaoId);
     if (!opcao || opcao.questoes_id !== parseInt(questaoId)) {
       const erro = new Error('Opção inválida para esta questão.');
@@ -65,21 +112,75 @@ const progressService = {
   },
 
   finalizarPratica: async (userId, praticaId, diarioBordo, fotoPath) => {
-    const pratica = await contentModel.findPraticaById(praticaId);
-    if (!pratica) {
-      const erro = new Error('Prática não encontrada.');
-      erro.status = 404;
-      throw erro;
+    if (!Number.isInteger(Number(userId)) || Number(userId) <= 0) {
+      const erro = new Error('Usuário inválido.'); erro.status = 401; throw erro;
     }
+    if (typeof diarioBordo !== 'string' || Array.from(diarioBordo.trim()).length < 100) {
+      const erro = new Error('O Diário de Bordo deve conter pelo menos 100 caracteres.'); erro.status = 422; throw erro;
+    }
+    const { validateImage } = require('../utils/imageValidation');
+    const imageError = validateImage(fotoPath);
+    if (imageError) { const erro = new Error(imageError); erro.status = 415; throw erro; }
 
-    await progressModel.upsertProgressoPratica(userId, praticaId, 'concluido', 100);
-    await progressService.recalcularModulo(userId, pratica.modulo_id);
+    const practice = await contentModel.findPraticaById(praticaId);
+    if (!practice) { const erro = new Error('Prática não encontrada.'); erro.status = 404; throw erro; }
+    await contentService.assertModuleAvailable(userId, practice.modulo_id);
+    const user = await queryGet(db, 'SELECT id FROM usuarios WHERE id = ?', [userId]);
+    if (!user) { const erro = new Error('Usuário não encontrado.'); erro.status = 401; throw erro; }
 
-    const progresso = await progressModel.findProgressoPratica(userId, praticaId);
-    await progressModel.saveEvidencia(progresso.id, diarioBordo, fotoPath);
+    await storage.ensureStorage();
+    const format = path.extname(fotoPath.originalname).toLowerCase();
+    const filename = `evidencia-${crypto.randomUUID()}${format}`;
+    const temporaryPath = path.join(storage.temporaryDir, `${filename}.part`);
+    const finalPath = path.join(storage.evidenceDir, filename);
+    let finalCreated = false;
 
-    logger.info(`Prática ${praticaId} finalizada por Usuário ${userId}`);
-    return { sucesso: true, praticaId, moduloId: pratica.modulo_id };
+    try {
+      await fs.writeFile(temporaryPath, fotoPath.buffer, { flag: 'wx', mode: 0o600 });
+      const result = await db.withTransaction(async (tx) => {
+        await queryRun(tx, `
+          INSERT INTO progresso_pratica (usuario_id, pratica_id, status, etapa_atual)
+          VALUES (?, ?, 'concluido', 100)
+          ON CONFLICT(usuario_id, pratica_id) DO UPDATE SET
+            status = 'concluido', etapa_atual = 100, data_conclusao = CURRENT_TIMESTAMP
+        `, [userId, praticaId]);
+        await progressService.recalcularModulo(userId, practice.modulo_id, tx);
+        const progresso = await queryGet(tx, 'SELECT id FROM progresso_pratica WHERE usuario_id = ? AND pratica_id = ?', [userId, praticaId]);
+        if (!progresso) throw new Error('Não foi possível localizar o progresso recém-salvo.');
+
+        await fs.rename(temporaryPath, finalPath);
+        finalCreated = true;
+        const evidence = await queryRun(tx, `
+          INSERT INTO evidencias (progresso_pratica_id, diario_bordo, foto_url)
+          VALUES (?, ?, ?)
+        `, [progresso.id, diarioBordo.trim(), storage.evidenceUrl(filename)]);
+        const saved = await queryGet(tx, 'SELECT data_envio FROM evidencias WHERE id = ?', [evidence.lastID]);
+
+        const newBadges = await awardPracticeAchievements(tx, userId, practice);
+        const moduleProgress = await queryGet(tx, 'SELECT status, percentual FROM progresso_modulo WHERE usuario_id = ? AND modulo_id = ?', [userId, practice.modulo_id]);
+        const modules = await queryAll(tx, 'SELECT id, titulo, ordem FROM modulos ORDER BY ordem ASC', []);
+        const nextModule = moduleProgress?.status === 'concluido' && Number(moduleProgress.percentual) === 100
+          ? modules.find((module) => module.ordem > practice.modulo_ordem) || null
+          : { id: practice.modulo_id, titulo: practice.modulo_titulo, continuarNoModulo: true };
+
+        return {
+          sucesso: true,
+          praticaId,
+          moduloId: practice.modulo_id,
+          evidenciaId: evidence.lastID,
+          protocolo: `TM-E-${evidence.lastID}`,
+          dataEnvio: saved?.data_envio || new Date().toISOString(),
+          progressoModulo: moduleProgress || { status: 'em_andamento', percentual: 0 },
+          proximoPasso: nextModule ? { moduloId: nextModule.id, titulo: nextModule.titulo } : null,
+          novasConquistas: newBadges
+        };
+      });
+      return result;
+    } catch (error) {
+      await fs.rm(temporaryPath, { force: true }).catch(() => {});
+      if (finalCreated) await fs.rm(finalPath, { force: true }).catch(() => {});
+      throw error;
+    }
   },
 
   emitirCertificado: async (userId) => {
@@ -103,9 +204,48 @@ const progressService = {
 
     await progressModel.createCertificado(userId, codigo, CERTIFICATE_HOURS);
 
-    logger.info(`Certificado emitido: ${codigo} para Usuário ${userId}`);
     return { codigo, cargaHoraria: CERTIFICATE_HOURS, dataEmissao: new Date() };
   }
 };
+
+function queryAll(executor, sql, params) {
+  if (executor !== db) return executor.all(sql, params);
+  return new Promise((resolve, reject) => executor.all(sql, params, (error, rows) => error ? reject(error) : resolve(rows)));
+}
+
+function queryGet(executor, sql, params) {
+  if (executor !== db) return executor.get(sql, params);
+  return new Promise((resolve, reject) => executor.get(sql, params, (error, row) => error ? reject(error) : resolve(row)));
+}
+
+function queryRun(executor, sql, params) {
+  if (executor !== db) return executor.run(sql, params);
+  return new Promise((resolve, reject) => executor.run(sql, params, function(error) {
+    if (error) reject(error); else resolve({ lastID: this.lastID, changes: this.changes });
+  }));
+}
+
+async function awardPracticeAchievements(executor, userId, practice) {
+  const title = `${practice.titulo || ''} ${practice.tipo || ''}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const candidates = [];
+  if (title.includes('circuit')) candidates.push({ code: 'primeiro-circuito', name: 'Primeiro Circuito', description: 'Concluiu a primeira prática de circuitos.' });
+
+  const completed = await executor.all(`
+    SELECT p.titulo, p.tipo FROM praticas p
+    JOIN progresso_pratica pp ON pp.pratica_id = p.id
+    WHERE pp.usuario_id = ? AND pp.status = 'concluido'
+  `, [userId]);
+  const concepts = new Set(completed.map((item) => `${item.titulo || ''} ${item.tipo || ''}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()));
+  if (['decomposicao', 'padroes', 'abstracao', 'algoritmos'].every((concept) => [...concepts].some((value) => value.includes(concept)))) {
+    candidates.push({ code: 'pensador-computacional', name: 'Pensador Computacional', description: 'Concluiu práticas dos quatro pilares do pensamento computacional.' });
+  }
+
+  const awarded = [];
+  for (const badge of candidates) {
+    const result = await executor.run('INSERT OR IGNORE INTO conquistas_usuario (usuario_id, codigo) VALUES (?, ?)', [userId, badge.code]);
+    if (result.changes > 0) awarded.push(badge);
+  }
+  return awarded;
+}
 
 module.exports = progressService;

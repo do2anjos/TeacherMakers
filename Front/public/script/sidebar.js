@@ -1,7 +1,6 @@
 function calculateGlobalCourseProgress(modulos) {
   if (!Array.isArray(modulos) || !modulos.length) return 0;
   
-  const user = typeof TeacherMakersApi !== 'undefined' ? TeacherMakersApi.getUser() : {};
   let totalItens = 0;
   let itensConcluidos = 0;
 
@@ -11,21 +10,13 @@ function calculateGlobalCourseProgress(modulos) {
 
     if (trilha.length) {
       totalItens += trilha.length;
-      if (isIntro && user.onboarding_concluido) {
-        itensConcluidos += trilha.length;
-      } else {
-        itensConcluidos += trilha.filter(item => item.status === 'concluido').length;
-      }
+      itensConcluidos += trilha.filter(item => item.status === 'concluido').length;
       return;
     }
 
     if (typeof modulo.totalItens === 'number') {
       totalItens += modulo.totalItens;
-      if (isIntro && user.onboarding_concluido) {
-        itensConcluidos += modulo.totalItens;
-      } else {
-        itensConcluidos += Number(modulo.itensConcluidos) || 0;
-      }
+      itensConcluidos += Number(modulo.itensConcluidos) || 0;
     }
   });
 

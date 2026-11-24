@@ -1,8 +1,7 @@
-require('dotenv').config();
-const authService = require('../services/authService');
-const progressService = require('../services/progressService');
-const contentModel = require('../models/contentModel');
-const progressModel = require('../models/progressModel');
+const authService = require('../../src/services/authService');
+const progressService = require('../../src/services/progressService');
+const contentModel = require('../../src/models/contentModel');
+const progressModel = require('../../src/models/progressModel');
 
 async function testFinalFlow() {
     try {

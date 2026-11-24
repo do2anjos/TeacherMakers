@@ -1,6 +1,6 @@
-require('dotenv').config();
-const authService = require('../services/authService');
-const logger = require('../config/logger');
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
+const authService = require('../../src/services/authService');
+const logger = require('../../src/config/logger');
 
 async function testAuth() {
     try {

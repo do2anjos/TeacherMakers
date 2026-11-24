@@ -21,15 +21,19 @@ const userModel = {
 
   create: (userData) => {
     const { nome, email, senha, nivel_ensino } = userData;
-    return new Promise((resolve, reject) => {
-      const query = `
+    return db.withTransaction(async (tx) => {
+      const result = await tx.run(`
         INSERT INTO usuarios (nome, email, senha, nivel_ensino)
         VALUES (?, ?, ?, ?)
-      `;
-      db.run(query, [nome, email, senha, nivel_ensino], function(err) {
-        if (err) reject(err);
-        else resolve({ id: this.lastID, ...userData });
-      });
+      `, [nome, email, senha, nivel_ensino]);
+      const modulos = await tx.all('SELECT id, ordem FROM modulos ORDER BY ordem ASC');
+      for (const [index, modulo] of modulos.entries()) {
+        await tx.run(`
+          INSERT INTO progresso_modulo (usuario_id, modulo_id, status, percentual, estado_acesso)
+          VALUES (?, ?, 'pendente', 0, ?)
+        `, [result.lastID, modulo.id, index === 0 ? 'available' : 'locked']);
+      }
+      return { id: result.lastID, ...userData };
     });
   },
 

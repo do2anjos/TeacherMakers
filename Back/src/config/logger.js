@@ -14,17 +14,12 @@ const logger = winston.createLogger({
   defaultMeta: { service: 'teachermakers-api' },
   transports: [
     new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.printf(({ level, message, timestamp, stack }) => {
-          return `${timestamp} ${level}: ${message} ${stack ? '\n' + stack : ''}`;
-        })
-      )
+        format: winston.format.combine(winston.format.timestamp(), winston.format.json())
     })
   ]
 });
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV === 'development') {
   logger.add(new winston.transports.File({ filename: path.join(logDir, 'error.log'), level: 'error' }));
   logger.add(new winston.transports.File({ filename: path.join(logDir, 'combined.log') }));
 }

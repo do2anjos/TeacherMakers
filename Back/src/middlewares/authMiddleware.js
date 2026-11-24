@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const responseHelper = require('../utils/responseHelper');
-const logger = require('../config/logger');
 
 function authMiddleware(req, res, next) {
   if (!process.env.JWT_SECRET) {
@@ -11,7 +10,6 @@ function authMiddleware(req, res, next) {
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    logger.warn(`Tentativa de acesso sem token: ${req.originalUrl}`);
     return responseHelper.erro(res, 'Acesso negado. Token não fornecido.', 401);
   }
 
@@ -20,7 +18,6 @@ function authMiddleware(req, res, next) {
     req.user = decoded;
     next();
   } catch (erro) {
-    logger.error(`Token inválido ou expirado: ${erro.message}`);
     return responseHelper.erro(res, 'Token inválido ou expirado.', 401);
   }
 }

@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const userModel = require('../models/userModel');
-const logger = require('../config/logger');
 
 const SALT_ROUNDS = 10;
 const JWT_EXPIRATION = '7d';
@@ -24,7 +23,6 @@ const authService = {
       senha: senhaCriptografada
     });
 
-    logger.info(`Novo usuário registrado: ${email}`);
 
     const { senha: _, ...usuarioSemSenha } = novoUsuario;
     return usuarioSemSenha;
@@ -51,7 +49,6 @@ const authService = {
       { expiresIn: JWT_EXPIRATION }
     );
 
-    logger.info(`Usuário logado: ${email}`);
 
     const { senha: _, ...usuarioSemSenha } = usuario;
     return {

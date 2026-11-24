@@ -1,7 +1,15 @@
 const progressService = require('../services/progressService');
 const responseHelper = require('../utils/responseHelper');
+const { validateImage } = require('../utils/imageValidation');
 
 const progressController = {
+  listarConquistas: async (req, res, next) => {
+    try {
+      const conquistas = await progressService.listarConquistas(req.user.id);
+      return responseHelper.sucesso(res, conquistas);
+    } catch (erro) { next(erro); }
+  },
+
   completarAula: async (req, res, next) => {
     try {
       const userId = req.user.id;
@@ -37,25 +45,39 @@ const progressController = {
       const { praticaId, diarioBordo } = req.body;
       const fotoPath = req.file ? req.file.path : null;
 
-      if (!praticaId) {
+      if (!Number.isInteger(Number(userId)) || Number(userId) <= 0) {
+        const erro = new Error('Usuário inválido.');
+        erro.status = 401;
+        throw erro;
+      }
+
+      if (!praticaId || !/^\d+$/.test(String(praticaId)) || Number(praticaId) <= 0) {
         const erro = new Error('ID da prática é obrigatório.');
         erro.status = 400;
         throw erro;
       }
 
-      if (!diarioBordo || !diarioBordo.trim()) {
+      const diarioNormalizado = typeof diarioBordo === 'string' ? diarioBordo.trim() : '';
+      if (!diarioNormalizado) {
         const erro = new Error('Diário de Bordo é obrigatório.');
         erro.status = 400;
         throw erro;
       }
 
-      if (!fotoPath) {
-        const erro = new Error('Foto da Atividade é obrigatória.');
-        erro.status = 400;
+      if (Array.from(diarioNormalizado).length < 100) {
+        const erro = new Error('O Diário de Bordo deve conter pelo menos 100 caracteres.');
+        erro.status = 422;
         throw erro;
       }
 
-      const resultado = await progressService.finalizarPratica(userId, praticaId, diarioBordo.trim(), fotoPath);
+      const imageError = validateImage(req.file);
+      if (imageError) {
+        const erro = new Error(imageError);
+        erro.status = req.file ? 415 : 400;
+        throw erro;
+      }
+
+      const resultado = await progressService.finalizarPratica(userId, Number(praticaId), diarioNormalizado, req.file);
       return responseHelper.sucesso(res, resultado, 201, 'Prática e evidências salvas com sucesso!');
     } catch (erro) {
       next(erro);

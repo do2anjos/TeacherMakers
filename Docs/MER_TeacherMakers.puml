@@ -102,6 +102,7 @@ entity PROGRESSO_MODULO {
   * modulo_id : INTEGER <<FK, NOT NULL>>
   * status : ENUM <<NOT NULL>>
   percentual : INTEGER
+  * estado_acesso : ENUM(available, locked) <<NOT NULL>>
   data_inicio : DATETIME
   data_conclusao : DATETIME
   --
@@ -166,6 +167,41 @@ entity CERTIFICADO {
   * carga_horaria : INTEGER <<NOT NULL>>
 }
 
+entity CONQUISTA_USUARIO {
+  * id : INTEGER <<PK>>
+  --
+  * usuario_id : INTEGER <<FK, NOT NULL>>
+  * codigo : VARCHAR(80) <<NOT NULL>>
+  data_conquista : DATETIME
+  --
+  UNIQUE(usuario_id, codigo)
+}
+
+entity DIAGNOSTICO {
+  * id : INTEGER <<PK>>
+  --
+  * usuario_id : INTEGER <<FK, NOT NULL>>
+  * tipo : VARCHAR(20) <<NOT NULL>>
+  pontuacao : INTEGER
+  * total_questoes : INTEGER <<NOT NULL>>
+  * status : VARCHAR(20) <<NOT NULL>>
+  data_inicio : DATETIME
+  data_conclusao : DATETIME
+  --
+  UNIQUE(usuario_id, tipo)
+}
+
+entity RESPOSTA_DIAGNOSTICO {
+  * id : INTEGER <<PK>>
+  --
+  * diagnostico_id : INTEGER <<FK, NOT NULL>>
+  * questao_codigo : VARCHAR(40) <<NOT NULL>>
+  * resposta : VARCHAR(80) <<NOT NULL>>
+  * correta : BOOLEAN <<NOT NULL>>
+  --
+  UNIQUE(diagnostico_id, questao_codigo)
+}
+
 ' ==================================================
 ' RELACIONAMENTOS
 ' ==================================================
@@ -188,6 +224,9 @@ PRATICA ||--o{ ETAPA_PRATICA : "dividida em"
 
 ' --- Evidências ---
 PROGRESSO_PRATICA ||--o{ EVIDENCIA : "documenta"
+USUARIO ||--o{ CONQUISTA_USUARIO : "desbloqueia"
+USUARIO ||--o{ DIAGNOSTICO : "realiza"
+DIAGNOSTICO ||--o{ RESPOSTA_DIAGNOSTICO : "registra"
 
 ' --- FKs das tabelas de progresso ---
 PROGRESSO_MODULO }o--|| MODULO : "referencia"

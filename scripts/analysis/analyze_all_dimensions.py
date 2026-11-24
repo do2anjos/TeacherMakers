@@ -1,8 +1,12 @@
+import os
 import openpyxl
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ANALISE_DADOS = os.path.join(PROJECT_ROOT, 'analise', 'dados')
 
 def analyze_all():
     # 1. LEARNABILITY
-    wb_l = openpyxl.load_workbook(r'c:\Users\Do2anjos\Desktop\T.I\TeacherMakers\Avaliação de Primeiro Acesso e Aprendizagem Inicial (Learnability) — TeacherMakers (respostas).xlsx')
+    wb_l = openpyxl.load_workbook(os.path.join(ANALISE_DADOS, 'Avaliação de Primeiro Acesso e Aprendizagem Inicial (Learnability) — TeacherMakers (respostas).xlsx'))
     ws_l = wb_l.active
     rows_l = list(ws_l.iter_rows(values_only=True))[1:]
     print("=== LEARNABILITY ===")
@@ -18,7 +22,7 @@ def analyze_all():
     print(f"Tempos de compreensão: {tempos}")
 
     # 2. USABILIDADE
-    wb_u = openpyxl.load_workbook(r'c:\Users\Do2anjos\Desktop\T.I\TeacherMakers\Ficha de Teste de Usabilidade — Tarefa Crítica (Módulo de Atividades) (respostas).xlsx')
+    wb_u = openpyxl.load_workbook(os.path.join(ANALISE_DADOS, 'Ficha de Teste de Usabilidade — Tarefa Crítica (Módulo de Atividades) (respostas).xlsx'))
     ws_u = wb_u.active
     rows_u = list(ws_u.iter_rows(values_only=True))[1:]
     print("\n=== USABILIDADE (TAREFA CRÍTICA) ===")
@@ -35,7 +39,7 @@ def analyze_all():
     print(f"Notas de facilidade percebida (1-5): {notas_facilidade}")
 
     # 3. TÉCNICA
-    wb_t = openpyxl.load_workbook(r'c:\Users\Do2anjos\Desktop\T.I\TeacherMakers\Checklist de Avaliação Técnica e Segurança da API — TeacherMakers (respostas).xlsx')
+    wb_t = openpyxl.load_workbook(os.path.join(ANALISE_DADOS, 'Checklist de Avaliação Técnica e Segurança da API — TeacherMakers (respostas).xlsx'))
     ws_t = wb_t.active
     rows_t = list(ws_t.iter_rows(values_only=True))[1:]
     print("\n=== TÉCNICA ===")
@@ -51,7 +55,7 @@ def analyze_all():
         print(f"  Parecer: {r[9][:30]}...")
 
     # 4. INSPEÇÃO VISUAL
-    wb_i = openpyxl.load_workbook(r'c:\Users\Do2anjos\Desktop\T.I\TeacherMakers\Ficha de Inspeção Visual e Percurso Cognitivo — TeacherMakers (respostas).xlsx')
+    wb_i = openpyxl.load_workbook(os.path.join(ANALISE_DADOS, 'Ficha de Inspeção Visual e Percurso Cognitivo — TeacherMakers (respostas).xlsx'))
     ws_i = wb_i.active
     rows_i = list(ws_i.iter_rows(values_only=True))[1:]
     print("\n=== INSPEÇÃO VISUAL ===")
@@ -66,7 +70,7 @@ def analyze_all():
         print(f"  Problema: {r[11]} - {r[12]} (Severidade: {r[13]})")
 
     # 5. PERFORMANCE
-    wb_p = openpyxl.load_workbook(r'c:\Users\Do2anjos\Desktop\T.I\TeacherMakers\Registro de Auditoria de Desempenho (Performance) — TeacherMakers (respostas).xlsx')
+    wb_p = openpyxl.load_workbook(os.path.join(ANALISE_DADOS, 'Registro de Auditoria de Desempenho (Performance) — TeacherMakers (respostas).xlsx'))
     ws_p = wb_p.active
     rows_p = list(ws_p.iter_rows(values_only=True))[1:]
     print("\n=== PERFORMANCE ===")
@@ -78,7 +82,7 @@ def analyze_all():
     print(f"Parecer: {r_p[11]}")
 
     # 6. EDUCACIONAL
-    wb_e = openpyxl.load_workbook(r'c:\Users\Do2anjos\Desktop\T.I\TeacherMakers\Avaliação de Conhecimento em Cultura Maker e Pensamento Computacional — Pré-teste (respostas).xlsx')
+    wb_e = openpyxl.load_workbook(os.path.join(ANALISE_DADOS, 'Avaliação de Conhecimento em Cultura Maker e Pensamento Computacional — Pré-teste (respostas).xlsx'))
     ws_e = wb_e.active
     rows_e = list(ws_e.iter_rows(values_only=True))[1:]
     print("\n=== EDUCACIONAL ===")

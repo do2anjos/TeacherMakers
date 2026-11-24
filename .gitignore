@@ -11,6 +11,8 @@ yarn-error.log*
 # Databases
 *.sqlite
 *.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
 
 # IDEs
 .vscode/
@@ -26,6 +28,9 @@ Back/uploads/
 Back/logs/
 *.log
 db_dump.json
+
+# Test coverage
+coverage/
 
 # Documentation
 Docs/*.docx

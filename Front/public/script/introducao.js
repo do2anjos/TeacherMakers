@@ -21,6 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let etapaAtual = 0;
   const maxEtapas = slides.length - 1;
+  const optionalDiagnosticLink = document.createElement('a');
+  optionalDiagnosticLink.href = 'pre-teste.html';
+  optionalDiagnosticLink.textContent = 'Fazer pr\u00e9-teste opcional';
+  optionalDiagnosticLink.className = 'btn btn-outline';
+  slides[maxEtapas].appendChild(optionalDiagnosticLink);
 
   function updateSlides() {
     
@@ -55,19 +60,14 @@ document.addEventListener('DOMContentLoaded', () => {
         etapaAtual++;
         updateSlides();
       } else {
-        
         try {
-          if (window.TeacherMakersApi) {
-            await TeacherMakersApi.completeOnboarding();
-            const user = TeacherMakersApi.getUser();
-            if (user) {
-              user.onboarding_concluido = 1;
-              localStorage.setItem('tm_user', JSON.stringify(user));
-            }
-          }
+          await TeacherMakersApi.completeOnboarding();
+          const user = TeacherMakersApi.getUser();
+          user.onboarding_concluido = 1;
+          localStorage.setItem('tm_user', JSON.stringify(user));
           window.location.href = 'home.html';
         } catch (erro) {
-          window.location.href = 'home.html';
+          console.error('Falha ao concluir a introdu\u00e7\u00e3o.', erro);
         }
       }
     });

@@ -3,15 +3,10 @@
   "version": "1.0.0",
   "description": "Orquestrador do projeto TeacherMakers",
   "scripts": {
-    "start": "npx concurrently \"npm run dev --prefix Back\" \"npx serve Front/public -p 3000\"",
+    "start": "node scripts/start-local.js",
     "back": "npm run dev --prefix Back",
-    "front": "npx serve Front/public -p 3000",
+    "front": "node scripts/start-local.js --frontend-only",
     "seed": "node Back/src/utils/seeder.js",
     "reset-db": "del Back\\database.sqlite && npm run seed"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2",
-    "marked": "^18.0.11",
-    "puppeteer-core": "^25.9.0"
   }
 }

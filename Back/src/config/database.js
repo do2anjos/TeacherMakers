@@ -1,7 +1,9 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
 const { createClient } = require('@libsql/client');
 const path = require('path');
+const fs = require('fs');
 const logger = require('./logger');
+const storage = require('./storage');
 
 const isTurso = (process.env.NODE_ENV === 'production' || process.env.USE_TURSO === 'true') && !!process.env.TURSO_DATABASE_URL;
 let db;
@@ -51,20 +53,74 @@ if (isTurso) {
         },
         close: (callback) => {
             if (callback) callback(null);
+        },
+        withTransaction: async (work) => {
+            const transaction = await client.transaction('write');
+            const executor = createLibsqlExecutor(transaction);
+            try {
+                const result = await work(executor);
+                await transaction.commit();
+                return result;
+            } catch (error) {
+                await transaction.rollback();
+                throw error;
+            }
         }
     };
     logger.info('Using Turso (LibSQL) database.');
 } else {
     const sqlite3 = require('sqlite3').verbose();
-    const dbPath = path.resolve(__dirname, '../../', process.env.DATABASE_URL || 'database.sqlite');
+    const dbPath = storage.databasePath;
+    if (dbPath !== ':memory:') fs.mkdirSync(path.dirname(dbPath), { recursive: true });
     db = new sqlite3.Database(dbPath, (err) => {
         if (err) {
             logger.error('Error connecting to the database:', err.message);
         } else {
             logger.info('Connected to the SQLite database.');
             db.run('PRAGMA foreign_keys = ON');
+            db.run('PRAGMA busy_timeout = 5000');
         }
     });
+    db.withTransaction = async (work) => {
+        await storage.ensureStorage();
+        const connection = new sqlite3.Database(dbPath);
+        const executor = createSqliteExecutor(connection);
+        try {
+            await executor.run('PRAGMA foreign_keys = ON');
+            await executor.run('PRAGMA busy_timeout = 5000');
+            await executor.run('BEGIN IMMEDIATE');
+            const result = await work(executor);
+            await executor.run('COMMIT');
+            return result;
+        } catch (error) {
+            try { await executor.run('ROLLBACK'); } catch (_) { /* Preserve the original failure. */ }
+            throw error;
+        } finally {
+            await new Promise((resolve) => connection.close(() => resolve()));
+        }
+    };
+}
+
+function createSqliteExecutor(connection) {
+    return {
+        all: (sql, params = []) => new Promise((resolve, reject) => connection.all(sql, params, (error, rows) => error ? reject(error) : resolve(rows))),
+        get: (sql, params = []) => new Promise((resolve, reject) => connection.get(sql, params, (error, row) => error ? reject(error) : resolve(row))),
+        run: (sql, params = []) => new Promise((resolve, reject) => connection.run(sql, params, function(error) {
+            if (error) reject(error);
+            else resolve({ lastID: this.lastID, changes: this.changes });
+        }))
+    };
+}
+
+function createLibsqlExecutor(transaction) {
+    return {
+        all: async (sql, params = []) => (await transaction.execute({ sql, args: params })).rows,
+        get: async (sql, params = []) => (await transaction.execute({ sql, args: params })).rows[0],
+        run: async (sql, params = []) => {
+            const result = await transaction.execute({ sql, args: params });
+            return { lastID: result.lastInsertRowid ? Number(result.lastInsertRowid) : null, changes: result.rowsAffected };
+        }
+    };
 }
 
 let dbInitPromise;
@@ -72,7 +128,7 @@ let dbInitPromise;
 function initDatabase() {
     if (dbInitPromise) return dbInitPromise;
 
-    dbInitPromise = new Promise((resolve, reject) => {
+    dbInitPromise = storage.ensureStorage().then(() => new Promise((resolve, reject) => {
         const schema = `
             CREATE TABLE IF NOT EXISTS usuarios (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -221,6 +277,7 @@ function initDatabase() {
                 carga_horaria INTEGER NOT NULL,
                 FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE
             );
+
         `;
 
         db.exec(schema, (err) => {
@@ -228,15 +285,38 @@ function initDatabase() {
                 logger.error('Failed to initialize database schema:', err);
                 reject(err);
             } else {
-                logger.info('Database schema initialized.');
-                resolve();
+                runMigrations()
+                    .then(() => { logger.info('Database schema initialized.'); resolve(); })
+                    .catch(reject);
             }
         });
-    });
+    }));
 
     return dbInitPromise;
+}
+
+async function runMigrations() {
+    await new Promise((resolve, reject) => db.run(`
+        CREATE TABLE IF NOT EXISTS schema_migrations (
+            version TEXT PRIMARY KEY,
+            applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `, (error) => error ? reject(error) : resolve()));
+    const migrationsDirectory = path.resolve(__dirname, '../migrations');
+    const migrations = fs.readdirSync(migrationsDirectory).filter((name) => name.endsWith('.js')).sort();
+    for (const filename of migrations) {
+        const migration = require(path.join(migrationsDirectory, filename));
+        const applied = await new Promise((resolve, reject) => db.get('SELECT version FROM schema_migrations WHERE version = ?', [migration.version], (error, row) => error ? reject(error) : resolve(row)));
+        if (applied) continue;
+        await db.withTransaction(async (tx) => {
+            await migration.up(tx);
+            await tx.run('INSERT INTO schema_migrations (version) VALUES (?)', [migration.version]);
+        });
+        logger.info(`Database migration applied: ${migration.version}`);
+    }
 }
 
 module.exports = db;
 module.exports.initDatabase = initDatabase;
 module.exports.isTurso = isTurso;
+module.exports.storage = storage;
