@@ -12,8 +12,10 @@ Atende rigorosamente a todos os critérios de qualidade visual, técnica e edito
 - Empacotamento em ZIP estruturado por categorias
 """
 
+import argparse
 import os
 import shutil
+import sys
 import zipfile
 import re
 import subprocess
@@ -23,13 +25,43 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
 from docx.oxml.ns import qn, nsdecls
 from docx.oxml import parse_xml
-import win32com.client
 
 # ── Paths ──
 BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ANALISE_DIR = os.path.join(BASE, "analise")
+ANALISE_DADOS_DIR = os.path.join(ANALISE_DIR, "dados")
+ANALISE_ENTREGAVEIS_DIR = os.path.join(ANALISE_DIR, "entregaveis")
+ANALISE_EVIDENCIAS_DIR = os.path.join(ANALISE_DIR, "evidencias")
+ANALISE_INSTRUMENTOS_DIR = os.path.join(ANALISE_DIR, "instrumentos")
+ANALISE_MATRIZES_DIR = os.path.join(ANALISE_DIR, "matrizes")
+ANALISE_RELATORIOS_DIR = os.path.join(ANALISE_DIR, "relatorios")
+
 OUT = os.path.join(BASE, "Dossie_Avaliacao_Qualidade")
-ZIP_PATH = os.path.join(BASE, "Dossie_Avaliacao_Qualidade.zip")
+ZIP_PATH = os.path.join(ANALISE_ENTREGAVEIS_DIR, "Dossie_Avaliacao_Qualidade.zip")
+
+RAW_SHEETS = [
+    os.path.join(ANALISE_DADOS_DIR, "Avaliação de Primeiro Acesso e Aprendizagem Inicial (Learnability) — TeacherMakers (respostas).xlsx"),
+    os.path.join(ANALISE_DADOS_DIR, "Ficha de Teste de Usabilidade — Tarefa Crítica (Módulo de Atividades) (respostas).xlsx"),
+    os.path.join(ANALISE_DADOS_DIR, "Questionário de Experiência do Usuário (UEQ-S) (respostas).xlsx"),
+    os.path.join(ANALISE_DADOS_DIR, "Checklist de Avaliação Técnica e Segurança da API — TeacherMakers (respostas).xlsx"),
+    os.path.join(ANALISE_DADOS_DIR, "Ficha de Inspeção Visual e Percurso Cognitivo — TeacherMakers (respostas).xlsx"),
+    os.path.join(ANALISE_DADOS_DIR, "Registro de Auditoria de Desempenho (Performance) — TeacherMakers (respostas).xlsx"),
+    os.path.join(ANALISE_DADOS_DIR, "Avaliação de Conhecimento em Cultura Maker e Pensamento Computacional — Pré-teste (respostas).xlsx"),
+]
+
+REQUIRED_INPUTS = [
+    os.path.join(ANALISE_RELATORIOS_DIR, "Relatorio_Mestre _Avaliacao_Qualidade.md"),
+    os.path.join(ANALISE_INSTRUMENTOS_DIR, "Fichas_de_Avaliacao.docx"),
+    os.path.join(ANALISE_MATRIZES_DIR, "Matriz_de_Avaliacao.xlsx"),
+    os.path.join(ANALISE_INSTRUMENTOS_DIR, "protocolo de avaliações.docx"),
+    os.path.join(ANALISE_RELATORIOS_DIR, "Analises_Realizadas.md"),
+    os.path.join(ANALISE_RELATORIOS_DIR, "Respostas_as_Perguntas_de_Avaliacao.md"),
+    os.path.join(ANALISE_RELATORIOS_DIR, "Triangulacao_de_Resultados.md"),
+    os.path.join(ANALISE_EVIDENCIAS_DIR, "Caderno_de_Evidencias_de_Qualidade.md"),
+    os.path.join(ANALISE_MATRIZES_DIR, "Matriz_Consolidada_de_Problemas.md"),
+    os.path.join(ANALISE_MATRIZES_DIR, "Matriz_Consolidada_de_Problemas.xlsx"),
+    *RAW_SHEETS,
+]
 
 # ── Color palette ──
 NAVY = RGBColor(0x1B, 0x3A, 0x5C)        # Azul-marinho principal (#1B3A5C)
@@ -296,11 +328,11 @@ def clean_markdown_text(text):
     return text
 
 
-def md_to_docx_via_pandoc(md_filename, title, subtitle=""):
+def md_to_docx_via_pandoc(md_path_or_name, title, subtitle=""):
     """Converte arquivo Markdown para DOCX via Pandoc e aplica padrão formal."""
-    md_path = os.path.join(BASE, md_filename)
+    md_path = md_path_or_name if os.path.isabs(md_path_or_name) else os.path.join(BASE, md_path_or_name)
     if not os.path.exists(md_path):
-        print(f"  [AVISO] Arquivo {md_filename} nao encontrado.")
+        print(f"  [AVISO] Arquivo {md_path} nao encontrado.")
         return None
 
     with open(md_path, 'r', encoding='utf-8') as f:
@@ -788,6 +820,29 @@ def style_existing_docx(docx_path, title, subtitle=""):
 # ═══════════════════════════════════════════════════
 
 def main():
+    parser = argparse.ArgumentParser(description="Gera e empacota o Dossiê Profissional de Avaliação da Qualidade.")
+    parser.add_argument("--dry-run", action="store_true", help="Valida todos os insumos em analise/* sem gerar documentos.")
+    args = parser.parse_args()
+
+    missing = [p for p in REQUIRED_INPUTS if not os.path.exists(p)]
+    if args.dry_run:
+        print(f"[DRY-RUN] Insumos verificados: {len(REQUIRED_INPUTS) - len(missing)}/{len(REQUIRED_INPUTS)} encontrados.")
+        if missing:
+            for m in missing:
+                print(f"  [AUSENTE] {os.path.relpath(m, BASE)}")
+            sys.exit(1)
+        print(f"[DRY-RUN] Diretório de saída previsto: {os.path.relpath(OUT, BASE)}")
+        print(f"[DRY-RUN] Pacote ZIP previsto: {os.path.relpath(ZIP_PATH, BASE)}")
+        return
+
+    if missing:
+        print("ERRO: Insumos ausentes em analise/:")
+        for m in missing:
+            print(f"  - {os.path.relpath(m, BASE)}")
+        sys.exit(1)
+
+    import win32com.client
+
     print("=" * 70)
     print("DOSSIE DE AVALIACAO DA QUALIDADE — TEACHERMAKERS (v1.0)")
     print("Pipeline de Consolidacao, Diagramacao e Exportacao Profissional")
@@ -796,6 +851,7 @@ def main():
     # 1. Limpeza de diretórios anteriores
     if os.path.exists(OUT):
         shutil.rmtree(OUT)
+    os.makedirs(ANALISE_ENTREGAVEIS_DIR, exist_ok=True)
 
     # 2. Criação da estrutura de pastas padronizada
     folders = {
@@ -819,12 +875,12 @@ def main():
     dossie.save(os.path.join(folders["01"], "Dossie_Avaliacao_da_Qualidade.docx"))
 
     print("[Etapa 3/12] Processando 02_PLANEJAMENTO_E_CRITERIOS/Plano_Mestre_de_Avaliacao...")
-    doc_pm = md_to_docx_via_pandoc("Relatorio_Mestre _Avaliacao_Qualidade.md", "Plano Mestre de Avaliacao da Qualidade")
+    doc_pm = md_to_docx_via_pandoc(os.path.join(ANALISE_RELATORIOS_DIR, "Relatorio_Mestre _Avaliacao_Qualidade.md"), "Plano Mestre de Avaliacao da Qualidade")
     if doc_pm:
         doc_pm.save(os.path.join(folders["02"], "Plano_Mestre_de_Avaliacao.docx"))
 
     print("[Etapa 4/12] Processando 02_PLANEJAMENTO_E_CRITERIOS/Perguntas_de_Avaliacao...")
-    fichas_src = os.path.join(BASE, "Fichas_de_Avaliacao.docx")
+    fichas_src = os.path.join(ANALISE_INSTRUMENTOS_DIR, "Fichas_de_Avaliacao.docx")
     fichas_dst = os.path.join(folders["02"], "Perguntas_de_Avaliacao.docx")
     if os.path.exists(fichas_src):
         shutil.copy2(fichas_src, fichas_dst)
@@ -833,41 +889,41 @@ def main():
     print("[Etapa 5/12] Gerando 02_PLANEJAMENTO_E_CRITERIOS/Matriz_de_Avaliacao...")
     doc_mat = build_matriz_avaliacao_doc()
     doc_mat.save(os.path.join(folders["02"], "Matriz_de_Avaliacao.docx"))
-    mat_xlsx = os.path.join(BASE, "Matriz_de_Avaliacao.xlsx")
+    mat_xlsx = os.path.join(ANALISE_MATRIZES_DIR, "Matriz_de_Avaliacao.xlsx")
     if os.path.exists(mat_xlsx):
         shutil.copy2(mat_xlsx, os.path.join(folders["02"], "Matriz_de_Avaliacao.xlsx"))
 
     print("[Etapa 6/12] Processando 03_EXECUCAO_E_ANALISES/Protocolos...")
-    prot_src = os.path.join(BASE, "protocolo de avaliações.docx")
+    prot_src = os.path.join(ANALISE_INSTRUMENTOS_DIR, "protocolo de avaliações.docx")
     prot_dst = os.path.join(folders["03"], "Protocolos.docx")
     if os.path.exists(prot_src):
         shutil.copy2(prot_src, prot_dst)
         style_existing_docx(prot_dst, "Protocolos de Avaliacao")
 
     print("[Etapa 7/12] Processando 03_EXECUCAO_E_ANALISES/Analises_Realizadas...")
-    doc_an = md_to_docx_via_pandoc("Analises_Realizadas.md", "Relatorio de Analises Realizadas")
+    doc_an = md_to_docx_via_pandoc(os.path.join(ANALISE_RELATORIOS_DIR, "Analises_Realizadas.md"), "Relatorio de Analises Realizadas")
     if doc_an:
         doc_an.save(os.path.join(folders["03"], "Analises_Realizadas.docx"))
 
     print("[Etapa 8/12] Processando 03_EXECUCAO_E_ANALISES/Respostas_as_Perguntas e Triangulacao...")
-    doc_resp = md_to_docx_via_pandoc("Respostas_as_Perguntas_de_Avaliacao.md", "Respostas as Perguntas de Avaliacao")
+    doc_resp = md_to_docx_via_pandoc(os.path.join(ANALISE_RELATORIOS_DIR, "Respostas_as_Perguntas_de_Avaliacao.md"), "Respostas as Perguntas de Avaliacao")
     if doc_resp:
         doc_resp.save(os.path.join(folders["03"], "Respostas_as_Perguntas_de_Avaliacao.docx"))
 
-    doc_tri = md_to_docx_via_pandoc("Triangulacao_de_Resultados.md", "Triangulacao de Resultados")
+    doc_tri = md_to_docx_via_pandoc(os.path.join(ANALISE_RELATORIOS_DIR, "Triangulacao_de_Resultados.md"), "Triangulacao de Resultados")
     if doc_tri:
         doc_tri.save(os.path.join(folders["03"], "Triangulacao.docx"))
 
     print("[Etapa 9/12] Processando 04_EVIDENCIAS_E_PROBLEMAS/Caderno e Matriz Consolidada...")
-    doc_ev = md_to_docx_via_pandoc("Caderno_de_Evidencias_de_Qualidade.md", "Caderno de Evidencias de Qualidade")
+    doc_ev = md_to_docx_via_pandoc(os.path.join(ANALISE_EVIDENCIAS_DIR, "Caderno_de_Evidencias_de_Qualidade.md"), "Caderno de Evidencias de Qualidade")
     if doc_ev:
         doc_ev.save(os.path.join(folders["04"], "Caderno_de_Evidencias_de_Qualidade.docx"))
 
-    doc_mp = md_to_docx_via_pandoc("Matriz_Consolidada_de_Problemas.md", "Matriz Consolidada de Problemas")
+    doc_mp = md_to_docx_via_pandoc(os.path.join(ANALISE_MATRIZES_DIR, "Matriz_Consolidada_de_Problemas.md"), "Matriz Consolidada de Problemas")
     if doc_mp:
         doc_mp.save(os.path.join(folders["04"], "Matriz_Consolidada_de_Problemas.docx"))
 
-    mp_xlsx = os.path.join(BASE, "Matriz_Consolidada_de_Problemas.xlsx")
+    mp_xlsx = os.path.join(ANALISE_MATRIZES_DIR, "Matriz_Consolidada_de_Problemas.xlsx")
     if os.path.exists(mp_xlsx):
         shutil.copy2(mp_xlsx, os.path.join(folders["04"], "Matriz_Consolidada_de_Problemas.xlsx"))
 
@@ -875,19 +931,9 @@ def main():
     doc_ref = build_referencias_e_rastreabilidade_doc()
     doc_ref.save(os.path.join(folders["05"], "Referencias_e_Rastreabilidade.docx"))
 
-    raw_sheets = [
-        "Avaliação de Primeiro Acesso e Aprendizagem Inicial (Learnability) — TeacherMakers (respostas).xlsx",
-        "Ficha de Teste de Usabilidade — Tarefa Crítica (Módulo de Atividades) (respostas).xlsx",
-        "Questionário de Experiência do Usuário (UEQ-S) (respostas).xlsx",
-        "Checklist de Avaliação Técnica e Segurança da API — TeacherMakers (respostas).xlsx",
-        "Ficha de Inspeção Visual e Percurso Cognitivo — TeacherMakers (respostas).xlsx",
-        "Registro de Auditoria de Desempenho (Performance) — TeacherMakers (respostas).xlsx",
-        "Avaliação de Conhecimento em Cultura Maker e Pensamento Computacional — Pré-teste (respostas).xlsx"
-    ]
-    for sheet in raw_sheets:
-        src = os.path.join(BASE, sheet)
+    for src in RAW_SHEETS:
         if os.path.exists(src):
-            shutil.copy2(src, os.path.join(folders["05_orig"], sheet))
+            shutil.copy2(src, os.path.join(folders["05_orig"], os.path.basename(src)))
 
     print("\n[Etapa 11/12] Convertendo todos os documentos Word (.docx) para PDF via Microsoft Word COM...")
     word = win32com.client.Dispatch("Word.Application")

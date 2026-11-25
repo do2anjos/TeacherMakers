@@ -1,94 +1,123 @@
+import argparse
 import os
 import shutil
 import zipfile
 import subprocess
-import win32com.client
+import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ANALISE_DIR = os.path.join(BASE_DIR, "analise")
-OUTPUT_DIR = os.path.join(BASE_DIR, "Dossie_de_Avaliacao_da_Qualidade")
-ZIP_NAME = os.path.join(BASE_DIR, "Dossie_de_Avaliacao_da_Qualidade_TeacherMakers.zip")
+ANALISE_DADOS_DIR = os.path.join(ANALISE_DIR, "dados")
+ANALISE_ENTREGAVEIS_DIR = os.path.join(ANALISE_DIR, "entregaveis")
+ANALISE_EVIDENCIAS_DIR = os.path.join(ANALISE_DIR, "evidencias")
+ANALISE_INSTRUMENTOS_DIR = os.path.join(ANALISE_DIR, "instrumentos")
+ANALISE_MATRIZES_DIR = os.path.join(ANALISE_DIR, "matrizes")
+ANALISE_RELATORIOS_DIR = os.path.join(ANALISE_DIR, "relatorios")
 
-# Mapping of markdown files to friendly document names
+OUTPUT_DIR = os.path.join(BASE_DIR, "Dossie_de_Avaliacao_da_Qualidade")
+ZIP_NAME = os.path.join(ANALISE_ENTREGAVEIS_DIR, "Dossie_de_Avaliacao_da_Qualidade_TeacherMakers.zip")
+
+# Mapping of markdown files (canonical paths under analise/) to friendly document names
 MD_CONVERSIONS = [
-    ("Relatorio_Mestre _Avaliacao_Qualidade.md", "01_Plano_Mestre_de_Avaliacao"),
-    ("Caderno_de_Evidencias_de_Qualidade.md", "05_Caderno_de_Evidencias_de_Qualidade"),
-    ("Analises_Realizadas.md", "06_Analises_Realizadas"),
-    ("Respostas_as_Perguntas_de_Avaliacao.md", "07_Respostas_as_Perguntas_de_Avaliacao"),
-    ("Triangulacao_de_Resultados.md", "08_Triangulacao_de_Resultados"),
-    ("Matriz_Consolidada_de_Problemas.md", "09_Matriz_Consolidada_de_Problemas"),
+    (os.path.join(ANALISE_RELATORIOS_DIR, "Relatorio_Mestre _Avaliacao_Qualidade.md"), "01_Plano_Mestre_de_Avaliacao"),
+    (os.path.join(ANALISE_EVIDENCIAS_DIR, "Caderno_de_Evidencias_de_Qualidade.md"), "05_Caderno_de_Evidencias_de_Qualidade"),
+    (os.path.join(ANALISE_RELATORIOS_DIR, "Analises_Realizadas.md"), "06_Analises_Realizadas"),
+    (os.path.join(ANALISE_RELATORIOS_DIR, "Respostas_as_Perguntas_de_Avaliacao.md"), "07_Respostas_as_Perguntas_de_Avaliacao"),
+    (os.path.join(ANALISE_RELATORIOS_DIR, "Triangulacao_de_Resultados.md"), "08_Triangulacao_de_Resultados"),
+    (os.path.join(ANALISE_MATRIZES_DIR, "Matriz_Consolidada_de_Problemas.md"), "09_Matriz_Consolidada_de_Problemas"),
 ]
 
 # Existing docx files to copy and convert to PDF
 DOCX_FILES = [
-    ("Fichas_de_Avaliacao.docx", "02_Perguntas_de_Avaliacao_Fichas"),
-    ("protocolo de avaliações.docx", "04_Protocolo_de_Avaliacoes"),
+    (os.path.join(ANALISE_INSTRUMENTOS_DIR, "Fichas_de_Avaliacao.docx"), "02_Perguntas_de_Avaliacao_Fichas"),
+    (os.path.join(ANALISE_INSTRUMENTOS_DIR, "protocolo de avaliações.docx"), "04_Protocolo_de_Avaliacoes"),
 ]
 
-# Excel matrices
+# Excel matrices (from canonical analise/matrizes/)
 EXCEL_FILES = [
-    ("Matriz_de_Avaliacao.xlsx", "03_Matriz_de_Avaliacao.xlsx"),
-    ("Matriz_Consolidada_de_Problemas.xlsx", "09_Matriz_Consolidada_de_Problemas.xlsx"),
+    (os.path.join(ANALISE_MATRIZES_DIR, "Matriz_de_Avaliacao.xlsx"), "03_Matriz_de_Avaliacao.xlsx"),
+    (os.path.join(ANALISE_MATRIZES_DIR, "Matriz_Consolidada_de_Problemas.xlsx"), "09_Matriz_Consolidada_de_Problemas.xlsx"),
 ]
 
-# Raw survey spreadsheets
+# Raw survey spreadsheets (under analise/dados/)
 RAW_SHEETS = [
-    "Avaliação de Primeiro Acesso e Aprendizagem Inicial (Learnability) — TeacherMakers (respostas).xlsx",
-    "Ficha de Teste de Usabilidade — Tarefa Crítica (Módulo de Atividades) (respostas).xlsx",
-    "Questionário de Experiência do Usuário (UEQ-S) (respostas).xlsx",
-    "Checklist de Avaliação Técnica e Segurança da API — TeacherMakers (respostas).xlsx",
-    "Ficha de Inspeção Visual e Percurso Cognitivo — TeacherMakers (respostas).xlsx",
-    "Registro de Auditoria de Desempenho (Performance) — TeacherMakers (respostas).xlsx",
-    "Avaliação de Conhecimento em Cultura Maker e Pensamento Computacional — Pré-teste (respostas).xlsx"
+    os.path.join(ANALISE_DADOS_DIR, "Avaliação de Primeiro Acesso e Aprendizagem Inicial (Learnability) — TeacherMakers (respostas).xlsx"),
+    os.path.join(ANALISE_DADOS_DIR, "Ficha de Teste de Usabilidade — Tarefa Crítica (Módulo de Atividades) (respostas).xlsx"),
+    os.path.join(ANALISE_DADOS_DIR, "Questionário de Experiência do Usuário (UEQ-S) (respostas).xlsx"),
+    os.path.join(ANALISE_DADOS_DIR, "Checklist de Avaliação Técnica e Segurança da API — TeacherMakers (respostas).xlsx"),
+    os.path.join(ANALISE_DADOS_DIR, "Ficha de Inspeção Visual e Percurso Cognitivo — TeacherMakers (respostas).xlsx"),
+    os.path.join(ANALISE_DADOS_DIR, "Registro de Auditoria de Desempenho (Performance) — TeacherMakers (respostas).xlsx"),
+    os.path.join(ANALISE_DADOS_DIR, "Avaliação de Conhecimento em Cultura Maker e Pensamento Computacional — Pré-teste (respostas).xlsx"),
 ]
+
+
+def validate_inputs():
+    """Verifica se todos os insumos esperados existem em analise/*."""
+    expected = (
+        [p for p, _ in MD_CONVERSIONS]
+        + [p for p, _ in DOCX_FILES]
+        + [p for p, _ in EXCEL_FILES]
+        + list(RAW_SHEETS)
+    )
+    missing = [p for p in expected if not os.path.exists(p)]
+    return expected, missing
+
 
 def main():
+    parser = argparse.ArgumentParser(description="Empacota o Dossiê de Avaliação da Qualidade.")
+    parser.add_argument("--dry-run", action="store_true", help="Valida entradas em analise/* sem gerar arquivos.")
+    args = parser.parse_args()
+
+    expected, missing = validate_inputs()
+    if args.dry_run:
+        print(f"[DRY-RUN] Insumos verificados: {len(expected) - len(missing)}/{len(expected)} encontrados.")
+        if missing:
+            for m in missing:
+                print(f"  [AUSENTE] {os.path.relpath(m, BASE_DIR)}")
+            sys.exit(1)
+        print(f"[DRY-RUN] Destino previsto: {os.path.relpath(ZIP_NAME, BASE_DIR)}")
+        return
+
+    if missing:
+        print("ERRO: Insumos ausentes em analise/:")
+        for m in missing:
+            print(f"  - {os.path.relpath(m, BASE_DIR)}")
+        sys.exit(1)
+
+    import win32com.client
+
     if os.path.exists(OUTPUT_DIR):
         shutil.rmtree(OUTPUT_DIR)
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+    os.makedirs(ANALISE_ENTREGAVEIS_DIR, exist_ok=True)
     raw_dir = os.path.join(OUTPUT_DIR, "Planilhas_de_Dados_Coletados")
     os.makedirs(raw_dir, exist_ok=True)
 
     print("1. Convertendo Markdown para DOCX via Pandoc...")
-    for md_file, out_base in MD_CONVERSIONS:
-        md_path = os.path.join(BASE_DIR, md_file)
+    for md_path, out_base in MD_CONVERSIONS:
         docx_path = os.path.join(OUTPUT_DIR, f"{out_base}.docx")
-        if os.path.exists(md_path):
-            print(f"  Convertendo: {md_file} -> {out_base}.docx")
-            cmd = ["pandoc", "-s", md_path, "-o", docx_path]
-            subprocess.run(cmd, check=True)
-        else:
-            print(f"  AVISO: {md_file} não encontrado!")
+        print(f"  Convertendo: {os.path.basename(md_path)} -> {out_base}.docx")
+        cmd = ["pandoc", "-s", md_path, "-o", docx_path]
+        subprocess.run(cmd, check=True)
 
     print("\n2. Copiando DOCX existentes...")
-    for orig_file, out_base in DOCX_FILES:
-        orig_path = os.path.join(BASE_DIR, orig_file)
+    for orig_path, out_base in DOCX_FILES:
         dest_path = os.path.join(OUTPUT_DIR, f"{out_base}.docx")
-        if os.path.exists(orig_path):
-            print(f"  Copiando: {orig_file} -> {out_base}.docx")
-            shutil.copy2(orig_path, dest_path)
-        else:
-            print(f"  AVISO: {orig_file} não encontrado!")
+        print(f"  Copiando: {os.path.basename(orig_path)} -> {out_base}.docx")
+        shutil.copy2(orig_path, dest_path)
 
     print("\n3. Copiando Matrizes Excel...")
-    for orig_file, out_name in EXCEL_FILES:
-        orig_path = os.path.join(BASE_DIR, orig_file)
+    for orig_path, out_name in EXCEL_FILES:
         dest_path = os.path.join(OUTPUT_DIR, out_name)
-        if os.path.exists(orig_path):
-            print(f"  Copiando: {orig_file} -> {out_name}")
-            shutil.copy2(orig_path, dest_path)
-        else:
-            print(f"  AVISO: {orig_file} não encontrado!")
+        print(f"  Copiando: {os.path.basename(orig_path)} -> {out_name}")
+        shutil.copy2(orig_path, dest_path)
 
     print("\n4. Copiando planilhas de dados brutos coletados...")
-    for sheet_file in RAW_SHEETS:
-        orig_path = os.path.join(BASE_DIR, sheet_file)
+    for orig_path in RAW_SHEETS:
+        sheet_file = os.path.basename(orig_path)
         dest_path = os.path.join(raw_dir, sheet_file)
-        if os.path.exists(orig_path):
-            print(f"  Copiando: {sheet_file}")
-            shutil.copy2(orig_path, dest_path)
-        else:
-            print(f"  AVISO: {sheet_file} não encontrado!")
+        print(f"  Copiando: {sheet_file}")
+        shutil.copy2(orig_path, dest_path)
 
     print("\n5. Convertendo DOCX para PDF via Word COM...")
     word = win32com.client.Dispatch("Word.Application")

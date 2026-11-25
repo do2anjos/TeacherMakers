@@ -1,9 +1,31 @@
+import argparse
 import os
+import sys
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-def build_excel_matrix():
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DEFAULT_OUT_PATH = os.path.join(PROJECT_ROOT, 'analise', 'matrizes', 'Matriz_Consolidada_de_Problemas.xlsx')
+
+
+def build_excel_matrix(out_path=DEFAULT_OUT_PATH, force=False, dry_run=False):
+    if dry_run:
+        exists = os.path.exists(out_path)
+        print(f'[DRY-RUN] Destino: {out_path}')
+        print(f'[DRY-RUN] Matriz canônica já existe: {exists}')
+        if exists and not force:
+            print('[DRY-RUN] Proteção ativa: sobrescrita bloqueada sem --force.')
+        return
+
+    if os.path.exists(out_path) and not force:
+        print(
+            f'ERRO: O arquivo canônico já existe em {out_path}.\n'
+            'Este script gera a versão histórica v1.0 e não deve sobrescrever a matriz canônica v2.0.\n'
+            'Use --output <caminho> para salvar em outro arquivo ou --force para confirmar a sobrescrita.'
+        )
+        sys.exit(1)
+
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = 'Problemas Consolidados'
@@ -169,11 +191,19 @@ def build_excel_matrix():
     for col_idx, width in col_widths.items():
         ws.column_dimensions[get_column_letter(col_idx)].width = width
 
-    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    out_path = os.path.join(project_root, 'analise', 'matrizes', 'Matriz_Consolidada_de_Problemas.xlsx')
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
     wb.save(out_path)
     print('Planilha gerada com sucesso:', out_path)
 
+
+def main():
+    parser = argparse.ArgumentParser(description='Gerador inicial (v1.0) da Matriz Consolidada de Problemas.')
+    parser.add_argument('--output', default=DEFAULT_OUT_PATH, help='Caminho de saída do arquivo .xlsx.')
+    parser.add_argument('--force', action='store_true', help='Permite sobrescrever um arquivo existente.')
+    parser.add_argument('--dry-run', action='store_true', help='Verifica caminho e proteção sem gravar arquivo.')
+    args = parser.parse_args()
+    build_excel_matrix(out_path=args.output, force=args.force, dry_run=args.dry_run)
+
+
 if __name__ == '__main__':
-    build_excel_matrix()
+    main()
