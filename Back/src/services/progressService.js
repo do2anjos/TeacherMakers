@@ -165,6 +165,7 @@ const progressService = {
           moduloId: practice.modulo_id,
           evidenciaId: evidence.lastID,
           protocolo: `TM-E-${evidence.lastID}`,
+          fotoUrl: `/api/progress/evidencias/${fotoToken}/foto`,
           dataEnvio: saved?.data_envio || new Date().toISOString(),
           progressoModulo: moduleProgress || { status: 'em_andamento', percentual: 0 },
           proximoPasso: nextModule ? { moduloId: nextModule.id, titulo: nextModule.titulo } : null,
