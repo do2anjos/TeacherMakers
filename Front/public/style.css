@@ -2482,7 +2482,9 @@ textarea.form-textarea:focus { border-color: var(--primary); outline: none; }
 .diagnostic-option { display: flex; align-items: flex-start; gap: .75rem; padding: .85rem; min-height: 48px; border: 1px solid #94a3b8; border-radius: .5rem; margin: .5rem 0; cursor: pointer; }
 .diagnostic-option input { width: 1.25rem; height: 1.25rem; flex: 0 0 auto; margin-top: .1rem; }
 .diagnostic-controls { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem; margin-top: 1rem; }
-.diagnostic-controls button { min-width: 9rem; min-height: 48px; }
+.diagnostic-controls button { min-width: 9rem; min-height: 48px; justify-content: center; }
+/* .btn usa display:inline-flex e sobrescreve o [hidden] do navegador; forçar ocultação real. */
+[hidden] { display: none !important; }
 #diagnostic-review h2 { color: var(--text); margin-bottom: .5rem; }
 #diagnostic-review > p { color: var(--text-muted); line-height: 1.6; margin-bottom: 1.25rem; }
 .diagnostic-review-item {
