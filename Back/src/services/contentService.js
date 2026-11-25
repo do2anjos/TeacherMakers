@@ -9,11 +9,16 @@ function isIntroModule(modulo) {
 }
 
 async function assertModuleAvailable(userId, moduleId) {
-  const modules = await contentModel.findAllModulos();
+  const [modules, user] = await Promise.all([
+    contentModel.findAllModulos(),
+    userModel.findById(userId)
+  ]);
   const moduleIndex = modules.findIndex((module) => Number(module.id) === Number(moduleId));
   if (moduleIndex < 0) { const error = new Error('Módulo não encontrado.'); error.status = 404; throw error; }
+  const onboardingConcluido = !!user?.onboarding_concluido;
   const progress = await progressModel.getUserModulosProgress(userId);
   const priorComplete = modules.slice(0, moduleIndex).every((module) => {
+    if (onboardingConcluido && isIntroModule(module)) return true;
     const row = progress.find((item) => Number(item.modulo_id) === Number(module.id));
     return row?.status === 'concluido' && Number(row.percentual) === 100;
   });
@@ -96,7 +101,7 @@ const contentService = {
       const totalItens = items.length;
       const itensConcluidos = items.filter(item => item.status === 'concluido').length;
       const percentual = totalItens ? Math.round((itensConcluidos / totalItens) * 100) : 0;
-      const moduleComplete = percentual === 100;
+      const moduleComplete = (isIntro && user?.onboarding_concluido) || percentual === 100;
       const acesso = priorModulesComplete ? 'available' : 'locked';
       priorModulesComplete = priorModulesComplete && moduleComplete;
 

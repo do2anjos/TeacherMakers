@@ -1,3 +1,8 @@
+const icon = (name, size = 14) => {
+    const raw = (typeof icons !== 'undefined' && icons[name]) ? icons[name] : '';
+    return raw ? raw.replace('<svg ', `<svg width="${size}" height="${size}" `) : '';
+};
+
 function initDashboardIcons() {
   if (typeof icons === 'undefined') return;
 
@@ -425,7 +430,7 @@ function buildContentActionHtml(item, isItemLocked, isItemDone, isIntro) {
         btnText = item.tipo === 'pratica' ? 'Fazer novamente' : 'Assistir novamente';
         btnClass = 'btn-outline';
     } else if (isItemLocked) {
-        const lockIcon = window.icons ? icons.lock.replace(/width="24"/, 'width="14"').replace(/height="24"/, 'height="14"') : '';
+        const lockIcon = icon('lock');
         btnText = `Bloqueado <span style="margin-left: 0.35rem; display: inline-flex; align-items: center; vertical-align: middle;">${lockIcon}</span>`;
         btnClass = 'btn-locked';
         btnAttr = 'disabled';
@@ -452,6 +457,7 @@ function renderHomeModulesGrid(modulos) {
     gridEl.innerHTML = '';
     
     let currentFound = false;
+    let startFound = false;
     let pendingReturnModal = null;
     const returnModuleId = sessionStorage.getItem('tm_return_module_id');
     const returnAulaId = sessionStorage.getItem('tm_return_aula_id');
@@ -471,11 +477,12 @@ function renderHomeModulesGrid(modulos) {
         const progresso = totalItens ? Math.round((itensConcluidos / totalItens) * 100) : (forcarModuloConcluido ? 100 : 0);
         
         const moduloConcluido = forcarModuloConcluido || progresso === 100;
-        const moduloAtual = !moduloConcluido && (progresso > 0 || trilha.some(item => item.status !== 'concluido') && !currentFound);
+        const moduloAtual = !mod.bloqueado && !moduloConcluido && progresso > 0;
+        const moduloBloqueado = !!mod.bloqueado;
         
         
         const el = document.createElement('div');
-        el.className = 'syllabus-card';
+        el.className = `syllabus-card${moduloBloqueado ? ' locked' : ''}`;
         
         
         let aulasHTML = '<div class="module-modal-drawers">';
@@ -516,7 +523,7 @@ function renderHomeModulesGrid(modulos) {
 
             const topicTitle = getContentTopicTitle(item);
             const statusTopico = grupoConcluido ? 'Concluído' : (grupoTemAtual ? 'Em andamento' : '');
-            const drawerIcon = window.icons ? icons.chevronDown : '';
+            const drawerIcon = icon('chevronDown', 16);
             const shouldOpenOnReturn = returnAulaId && groupItems.some(groupItem => groupItem.tipo === 'aula' && String(groupItem.id) === String(returnAulaId));
 
             aulasHTML += `
@@ -538,8 +545,11 @@ function renderHomeModulesGrid(modulos) {
         let statusBadge = '';
         if (moduloConcluido) statusBadge = '<span class="syllabus-badge badge-done">Concluído</span>';
         else if (moduloAtual) statusBadge = '<span class="syllabus-badge badge-current">Em Andamento</span>';
-
-        const moduloBloqueado = !moduloConcluido && !moduloAtual && !ehIntro;
+        else if (moduloBloqueado) statusBadge = '<span class="syllabus-badge badge-locked">Bloqueado</span>';
+        else if (!startFound) {
+            statusBadge = '<span class="syllabus-badge badge-start">Comece por Aqui</span>';
+            startFound = true;
+        }
 
         
         let modBtnText = 'Iniciar';
@@ -550,7 +560,7 @@ function renderHomeModulesGrid(modulos) {
             modBtnText = 'Ver conteúdos';
             modBtnClass = 'btn-outline';
         } else if (moduloBloqueado) {
-            const lockIcon = window.icons ? icons.lock.replace(/width="24"/, 'width="14"').replace(/height="24"/, 'height="14"') : '';
+            const lockIcon = icon('lock');
             modBtnText = `Bloqueado <span style="margin-left: 0.35rem; display: inline-flex; align-items: center; vertical-align: middle;">${lockIcon}</span>`;
             modBtnClass = 'btn-locked';
             modBtnAttr = 'disabled';
@@ -560,7 +570,7 @@ function renderHomeModulesGrid(modulos) {
             modBtnText = moduloAtual ? 'Continuar' : 'Ver conteúdos';
         }
 
-        const openIcon = window.icons && icons.arrowRight ? icons.arrowRight : '';
+        const openIcon = icon('arrowRight', 16);
         
         el.innerHTML = `
             <div class="syllabus-header" style="align-items:flex-start; flex-direction:column; gap:1.2rem;">
