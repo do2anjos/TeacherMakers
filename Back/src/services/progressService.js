@@ -15,6 +15,8 @@ const progressService = {
     const earnedByCode = new Map(earned.map((row) => [row.codigo, row.data_conquista]));
     return [
       { codigo: 'primeiro-circuito', nome: 'Primeiro Circuito', descricao: 'Concluiu a primeira prática de circuitos.' },
+      { codigo: 'mestre-decomposicao', nome: 'Mestre da Decomposição', descricao: 'Concluiu a prática de Decomposição.' },
+      { codigo: 'cacador-padroes', nome: 'Caçador de Padrões', descricao: 'Concluiu a prática de Reconhecimento de Padrões.' },
       { codigo: 'pensador-computacional', nome: 'Pensador Computacional', descricao: 'Concluiu práticas dos quatro pilares do pensamento computacional.' }
     ].map((badge) => ({ ...badge, desbloqueado: earnedByCode.has(badge.codigo), dataConquista: earnedByCode.get(badge.codigo) || null }));
   },
@@ -263,6 +265,8 @@ async function awardPracticeAchievements(executor, userId, practice) {
   const title = `${practice.titulo || ''} ${practice.tipo || ''}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   const candidates = [];
   if (title.includes('circuit')) candidates.push({ code: 'primeiro-circuito', name: 'Primeiro Circuito', description: 'Concluiu a primeira prática de circuitos.' });
+  if (title.includes('decomposicao')) candidates.push({ code: 'mestre-decomposicao', name: 'Mestre da Decomposição', description: 'Concluiu a prática de Decomposição.' });
+  if (title.includes('padroes')) candidates.push({ code: 'cacador-padroes', name: 'Caçador de Padrões', description: 'Concluiu a prática de Reconhecimento de Padrões.' });
 
   const completed = await executor.all(`
     SELECT p.titulo, p.tipo FROM praticas p

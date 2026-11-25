@@ -69,6 +69,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.warn("Conquistas não carregadas do backend, exibindo base:", errConquistas);
             renderAchievements([
                 { codigo: 'primeiro-circuito', nome: 'Primeiro Circuito', descricao: 'Concluiu a primeira prática de circuitos.', desbloqueado: false },
+                { codigo: 'mestre-decomposicao', nome: 'Mestre da Decomposição', descricao: 'Concluiu a prática de Decomposição.', desbloqueado: false },
+                { codigo: 'cacador-padroes', nome: 'Caçador de Padrões', descricao: 'Concluiu a prática de Reconhecimento de Padrões.', desbloqueado: false },
                 { codigo: 'pensador-computacional', nome: 'Pensador Computacional', descricao: 'Concluiu práticas dos quatro pilares do pensamento computacional.', desbloqueado: false }
             ]);
         }

@@ -2771,6 +2771,8 @@ textarea.form-textarea:focus { border-color: var(--primary); outline: none; }
   width: 100%;
   flex-wrap: wrap;
 }
+/* O .trail-header centraliza o texto; aqui o bloco de título deve alinhar à esquerda. */
+.achievement-header-content > div:first-child { text-align: left; }
 
 .achievement-summary-pill {
   display: inline-flex;
