@@ -131,14 +131,22 @@ describe('fluxos críticos isolados do TeacherMakers', () => {
     expect(response.status).toBe(201);
     expect(response.body.dados.protocolo).toMatch(/^TM-E-\d+$/);
     expect(response.body.dados.progressoModulo.percentual).toBe(100);
-    const evidence = await all('SELECT foto_url FROM evidencias');
+    const evidence = await all('SELECT foto_url, foto_blob, foto_mime, foto_token FROM evidencias');
     expect(evidence).toHaveLength(1);
-    const filename = decodeURIComponent(evidence[0].foto_url.split('/').pop());
-    expect(fs.existsSync(path.join(isolatedDataRoot, 'uploads', 'evidencias', filename))).toBe(true);
+    expect(evidence[0].foto_blob).toBeTruthy();
+    expect(Buffer.from(evidence[0].foto_blob).equals(png)).toBe(true);
+    expect(evidence[0].foto_mime).toBe('image/png');
+    expect(evidence[0].foto_url).toMatch(/^\/api\/progress\/evidencias\/.+\/foto$/);
+
+    const fotoResponse = await request(app).get(evidence[0].foto_url)
+      .set('Authorization', `Bearer ${tokenFor(user.id)}`)
+      .buffer(true);
+    expect(fotoResponse.status).toBe(200);
+    expect(Buffer.from(fotoResponse.body).equals(png)).toBe(true);
     expect(response.body.dados.novasConquistas.map((badge) => badge.code)).toContain('primeiro-circuito');
   });
 
-  test('rollback e compensação removem progresso e arquivo em falha ao salvar evidência', async () => {
+  test('rollback remove progresso e BLOB em falha ao salvar evidência', async () => {
     const user = await createUser('rollback@test.local');
     const originalTransaction = db.withTransaction;
     db.withTransaction = (work) => originalTransaction((tx) => work({
@@ -153,9 +161,10 @@ describe('fluxos críticos isolados do TeacherMakers', () => {
         .attach('foto', png, { filename: 'falha.png', contentType: 'image/png' });
       expect(response.status).toBe(500);
       expect(await all('SELECT * FROM progresso_pratica WHERE usuario_id = ?', [user.id])).toHaveLength(0);
-      expect(await all('SELECT * FROM evidencias')).toHaveLength(1);
-      expect(fs.readdirSync(path.join(isolatedDataRoot, 'uploads', 'evidencias'))).toHaveLength(1);
-      expect(fs.readdirSync(path.join(isolatedDataRoot, '.tmp', 'uploads'))).toHaveLength(0);
+      // A evidência válida do teste anterior permanece; a falha não gravou BLOB órfão.
+      const evidencias = await all('SELECT foto_blob FROM evidencias');
+      expect(evidencias).toHaveLength(1);
+      expect(evidencias[0].foto_blob).toBeTruthy();
     } finally {
       db.withTransaction = originalTransaction;
     }
@@ -179,10 +188,10 @@ describe('fluxos críticos isolados do TeacherMakers', () => {
     expect(fs.existsSync(orphanPart)).toBe(false);
     expect(fs.existsSync(orphanEvidence)).toBe(false);
 
-    const evidenciasValidas = await all('SELECT foto_url FROM evidencias');
+    const evidenciasValidas = await all('SELECT foto_url, foto_blob FROM evidencias');
     expect(evidenciasValidas.length).toBeGreaterThan(0);
-    const validFilename = decodeURIComponent(evidenciasValidas[0].foto_url.split('/').pop());
-    expect(fs.existsSync(path.join(isolatedDataRoot, 'uploads', 'evidencias', validFilename))).toBe(true);
+    expect(evidenciasValidas[0].foto_blob).toBeTruthy();
+    expect(Buffer.from(evidenciasValidas[0].foto_blob).equals(png)).toBe(true);
   });
 
   test('cria estado inicial sem conclusão e impede acesso à trilha bloqueada', async () => {
