@@ -1,8 +1,10 @@
 const contentModel = require('../models/contentModel');
 const progressModel = require('../models/progressModel');
 const userModel = require('../models/userModel');
+const diagnosticService = require('./diagnosticService');
 
 const UNLINKED_PRATICA_ORDEM_BASE = 999;
+const pretesteGateAtivo = () => process.env.REQUIRE_DIAGNOSTIC_PRETEST === 'true';
 
 function isIntroModule(modulo) {
   return modulo.id === 0 || modulo.titulo.toLowerCase().includes('introdução');
@@ -14,6 +16,15 @@ async function assertModuleAvailable(userId, moduleId) {
     userModel.findById(userId)
   ]);
   const moduleIndex = modules.findIndex((module) => Number(module.id) === Number(moduleId));
+  if (moduleIndex < 0) { const error = new Error('Módulo não encontrado.'); error.status = 404; throw error; }
+  const modulo = modules[moduleIndex];
+  const precisaPreteste = pretesteGateAtivo() && !isIntroModule(modulo) && !(await diagnosticService.isPretesteConcluido(userId));
+  if (precisaPreteste) {
+    const error = new Error('Conclua o pré-teste diagnóstico antes de acessar os módulos.');
+    error.status = 403;
+    error.code = 'DIAGNOSTIC_REQUIRED';
+    throw error;
+  }
   if (moduleIndex < 0) { const error = new Error('Módulo não encontrado.'); error.status = 404; throw error; }
   const onboardingConcluido = !!user?.onboarding_concluido;
   const progress = await progressModel.getUserModulosProgress(userId);
@@ -40,6 +51,7 @@ const contentService = {
       contentModel.findAllAulas(),
       contentModel.findAllPraticas()
     ]);
+    const pretesteConcluido = pretesteGateAtivo() ? await diagnosticService.isPretesteConcluido(userId) : true;
 
     const aulaProgressMap = aulaProgress.reduce((acc, p) => {
       acc[p.aula_id] = p.status;
@@ -102,7 +114,8 @@ const contentService = {
       const itensConcluidos = items.filter(item => item.status === 'concluido').length;
       const percentual = totalItens ? Math.round((itensConcluidos / totalItens) * 100) : 0;
       const moduleComplete = (isIntro && user?.onboarding_concluido) || percentual === 100;
-      const acesso = priorModulesComplete ? 'available' : 'locked';
+      const bloqueadoPorPreteste = pretesteGateAtivo() && !isIntro && !pretesteConcluido;
+      const acesso = (priorModulesComplete && !bloqueadoPorPreteste) ? 'available' : 'locked';
       priorModulesComplete = priorModulesComplete && moduleComplete;
 
       const trilhaOrdenada = items.sort((a, b) => a.ordem - b.ordem).map(item => {
@@ -116,6 +129,7 @@ const contentService = {
         isIntro,
         acesso,
         bloqueado: acesso === 'locked',
+        bloqueadoPorPreteste,
         status: percentual === 100 ? 'concluido' : (percentual > 0 ? 'em_andamento' : 'pendente'),
         percentual,
         totalItens,

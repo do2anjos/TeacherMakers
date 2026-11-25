@@ -18,6 +18,9 @@ const logger = require('../../src/config/logger');
 const migration = require('../../src/migrations/003_repair_legacy_diagnostics');
 const attemptConstraintMigration = require('../../src/migrations/004_repair_diagnostic_attempt_constraints');
 
+// O database.js carrega o .env; isolar o gate do pre-teste nos testes.
+delete process.env.REQUIRE_DIAGNOSTIC_PRETEST;
+
 // O database.js carrega o .env do backend; remover depois dos requires para isolar o teste.
 delete process.env.DIAGNOSTIC_QUESTIONS_FILE;
 delete process.env.DIAGNOSTIC_ALLOW_DRAFT_CONTENT;

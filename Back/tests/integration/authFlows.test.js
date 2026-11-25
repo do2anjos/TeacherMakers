@@ -14,6 +14,9 @@ const bcrypt = require('bcryptjs');
 const app = require('../../src/server');
 const db = require('../../src/config/database');
 
+// O database.js carrega o .env; isolar o gate do pre-teste nos testes.
+delete process.env.REQUIRE_DIAGNOSTIC_PRETEST;
+
 const validUser = {
   nome: 'Professora Sintética',
   email: 'sintetica@test.local',

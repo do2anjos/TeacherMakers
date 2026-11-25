@@ -172,6 +172,9 @@ describe('fluxos críticos isolados do TeacherMakers', () => {
 
   test('reconciliação de arquivos órfãos limpa resíduos de interrupção abrupta preservando evidências válidas', async () => {
     const progressService = require('../../src/services/progressService');
+
+// O database.js carrega o .env; isolar o gate do pre-teste nos testes.
+delete process.env.REQUIRE_DIAGNOSTIC_PRETEST;
     const orphanPart = path.join(isolatedDataRoot, '.tmp', 'uploads', 'orfao-crashed.part');
     const orphanEvidence = path.join(isolatedDataRoot, 'uploads', 'evidencias', 'evidencia-orfao-sem-banco.png');
 

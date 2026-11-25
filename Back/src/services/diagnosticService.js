@@ -254,6 +254,12 @@ function queryAll(executor, sql, params) {
   return new Promise((resolve, reject) => executor.all(sql, params, (error, rows) => error ? reject(error) : resolve(rows)));
 }
 
+async function isPretesteConcluido(userId) {
+    const attempt = await queryGet(db, "SELECT status FROM diagnosticos WHERE usuario_id = ? AND tipo = 'pre'", [userId]);
+    return attempt?.status === 'completed';
+}
+
 module.exports = diagnosticService;
 module.exports.loadQuestionBank = loadQuestionBank;
 module.exports.validateQuestionBank = validateQuestionBank;
+module.exports.isPretesteConcluido = isPretesteConcluido;

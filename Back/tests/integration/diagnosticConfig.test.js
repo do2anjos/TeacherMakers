@@ -18,6 +18,9 @@ const db = require('../../src/config/database');
 const userModel = require('../../src/models/userModel');
 const diagnosticService = require('../../src/services/diagnosticService');
 
+// O database.js carrega o .env; isolar o gate do pre-teste nos testes.
+delete process.env.REQUIRE_DIAGNOSTIC_PRETEST;
+
 function run(sql, params = []) {
   return new Promise((resolve, reject) => db.run(sql, params, function(error) {
     if (error) reject(error); else resolve({ lastID: this.lastID, changes: this.changes });
