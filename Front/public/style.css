@@ -13,8 +13,8 @@
    VARIÁVEIS
 ═══════════════════════════════════════════ */
 :root {
-  --primary:       #4f6ef7;
-  --primary-dark:  #3b5ce4;
+  --primary:       #3b5ce4; /* WCAG AA: 5,47:1 sobre branco (antes #4f6ef7 = 4,28:1) */
+  --primary-dark:  #3730a3;
   --primary-light: #eef1ff;
   --text:          #1a1a2e;
   --text-muted:    #555;
@@ -288,13 +288,14 @@ footer {
   text-align: center;
   padding: 2rem;
   border-top: 1px solid var(--border);
-  color: #999;
+  color: #666;
   font-size: .82rem;
 }
 .footer        { background: var(--text); padding: 2.5rem 0; text-align: center; border-top: none; color: inherit; }
+.footer h2,
 .footer h3     { font-size: 1.25rem; font-weight: 700; color: #fff; margin: 0 0 .3rem 0; }
 .footer p      { font-size: .875rem; color: rgba(255,255,255,.6); margin: 0 0 .5rem 0; }
-.footer small  { font-size: .75rem; color: rgba(255,255,255,.4); }
+.footer small  { font-size: .75rem; color: rgba(255,255,255,.75); }
 
 /* ═══════════════════════════════════════════
    BLOBS DECORATIVOS (Login / Cadastro)
@@ -394,7 +395,7 @@ footer {
   margin-bottom: .5rem;
 }
 
-.auth-divider { display: flex; align-items: center; gap: .75rem; margin: 1rem 0; color: #bbb; font-size: .8rem; }
+.auth-divider { display: flex; align-items: center; gap: .75rem; margin: 1rem 0; color: #6b7280; font-size: .8rem; }
 .auth-divider::before,
 .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
