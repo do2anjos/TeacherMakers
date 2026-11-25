@@ -39,7 +39,7 @@ const userModel = {
 
   completeOnboarding: (userId) => {
     return new Promise((resolve, reject) => {
-      db.run('UPDATE usuarios SET onboarding_concluido = 1 WHERE id = ?', [userId], function(err) {
+      db.run('UPDATE usuarios SET onboarding_concluido = 1 WHERE id = ? AND (onboarding_concluido IS NULL OR onboarding_concluido = 0)', [userId], function(err) {
         if (err) reject(err);
         else resolve(this.changes > 0);
       });
