@@ -94,7 +94,8 @@ TeacherMakers/
 - `Docs/`: documentação técnica/arquitetural e requisitos do sistema.
 - `Back/docs/`: documentação específica do backend (ex.: contratos e conteúdos diagnósticos em draft).
 - `analise/`: insumos, dados, instrumentos, protocolos, matrizes, relatórios e evidências de análise/qualidade.
-- `Dossie_Avaliacao_Qualidade/`: dossiê formal e registros de auditoria/avaliação (preservado conforme política do repositório).
+- `analise/matrizes/`: **fonte canônica oficial e viva de trabalho** para a `Matriz_Consolidada_de_Problemas.xlsx` e `Matriz_de_Avaliacao.xlsx` (ver detalhes em [analise/matrizes/README.md](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/analise/matrizes/README.md)).
+- `Dossie_Avaliacao_Qualidade/`: dossiê formal e registros de auditoria/avaliação. As matrizes nele contidas são **snapshots históricos imutáveis** (ex.: Baseline V1.0) preservados para rastreabilidade e auditoria.
 
 **Testes e scripts:**
 - Testes automatizados backend: `Back/tests/integration/` (Jest/Supertest, configurado por `Back/jest.config.js`).

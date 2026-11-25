@@ -6,14 +6,15 @@
 **Data da Emissão:** Outubro de 2026  
 **Natureza do Documento:** Relatório Técnico-Científico e Caderno Oficial de Evidências de Qualidade  
 **Documentos Vinculados:**
-* [Relatório Mestre de Avaliação da Qualidade](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/Relatorio_Mestre%20_Avaliacao_Qualidade.md)
-* [Matriz de Avaliação](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/Matriz_de_Avaliacao.xlsx)
-* [Fichas de Avaliação](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/Fichas_de_Avaliacao.docx)
-* [Protocolo de Avaliações](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/protocolo%20de%20avaliações.docx)
-* [Análises Realizadas](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/Analises_Realizadas.md)
-* [Respostas às Perguntas de Avaliação](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/Respostas_as_Perguntas_de_Avaliacao.md)
-* [Triangulação de Resultados](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/Triangulacao_de_Resultados.md)
-* [Matriz Consolidada de Problemas](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/Matriz_Consolidada_de_Problemas.md) e [Planilha XLSX](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/Matriz_Consolidada_de_Problemas.xlsx)
+* [Relatório Mestre de Avaliação da Qualidade](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/analise/relatorios/Relatorio_Mestre%20_Avaliacao_Qualidade.md)
+* [Matriz de Avaliação (Canônica)](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/analise/matrizes/Matriz_de_Avaliacao.xlsx)
+* [Fichas de Avaliação](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/analise/instrumentos/Fichas_de_Avaliacao.docx)
+* [Protocolo de Avaliações](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/analise/instrumentos/protocolo%20de%20avalia%C3%A7%C3%B5es.docx)
+* [Análises Realizadas](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/analise/relatorios/Analises_Realizadas.md)
+* [Respostas às Perguntas de Avaliação](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/analise/relatorios/Respostas_as_Perguntas_de_Avaliacao.md)
+* [Triangulação de Resultados](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/analise/relatorios/Triangulacao_de_Resultados.md)
+* [Matriz Consolidada de Problemas (Canônica)](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/analise/matrizes/Matriz_Consolidada_de_Problemas.md) e [Planilha XLSX Canônica](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/analise/matrizes/Matriz_Consolidada_de_Problemas.xlsx)
+*(Nota de Governança: a pasta `analise/matrizes/` é a fonte canônica oficial e viva; cópias em dossiês anteriores constituem snapshots históricos imutáveis.)*
 
 ---
 
@@ -276,7 +277,7 @@ A triangulação analítica detalhada em [Triangulacao_de_Resultados.md](file://
 
 ## 7. Matriz Consolidada de Problemas e Recomendações
 
-A íntegra da matriz encontra-se em [Matriz_Consolidada_de_Problemas.md](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/Matriz_Consolidada_de_Problemas.md) e na planilha [Matriz_Consolidada_de_Problemas.xlsx](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/Matriz_Consolidada_de_Problemas.xlsx). Abaixo, apresenta-se o plano de ação priorizado:
+A íntegra da matriz encontra-se em [Matriz_Consolidada_de_Problemas.md](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/analise/matrizes/Matriz_Consolidada_de_Problemas.md) e na planilha canônica [Matriz_Consolidada_de_Problemas.xlsx](file:///c:/Users/Do2anjos/Desktop/T.I/TeacherMakers/analise/matrizes/Matriz_Consolidada_de_Problemas.xlsx). Abaixo, apresenta-se o plano de ação priorizado:
 
 | ID | Problema Identificado | Dimensão | Severidade | Ação de Correção Recomendada | Prioridade |
 | :---: | :--- | :--- | :---: | :--- | :---: |
