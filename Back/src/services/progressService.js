@@ -205,6 +205,45 @@ const progressService = {
     await progressModel.createCertificado(userId, codigo, CERTIFICATE_HOURS);
 
     return { codigo, cargaHoraria: CERTIFICATE_HOURS, dataEmissao: new Date() };
+  },
+
+  reconciliarArquivosOrfaos: async (executor = db) => {
+    await storage.ensureStorage();
+    const limpos = { temporarios: [], evidencias: [] };
+
+    try {
+      const tempFiles = await fs.readdir(storage.temporaryDir);
+      for (const file of tempFiles) {
+        if (file.endsWith('.part')) {
+          const filePath = path.join(storage.temporaryDir, file);
+          await fs.rm(filePath, { force: true }).catch(() => {});
+          limpos.temporarios.push(file);
+        }
+      }
+    } catch (_) {}
+
+    try {
+      const evidenceFiles = await fs.readdir(storage.evidenceDir);
+      if (evidenceFiles.length > 0) {
+        const rows = await queryAll(executor, 'SELECT foto_url FROM evidencias', []);
+        const referencedFiles = new Set(
+          rows.map((r) => (r.foto_url ? decodeURIComponent(r.foto_url.split('/').pop()) : null)).filter(Boolean)
+        );
+        for (const file of evidenceFiles) {
+          if (!referencedFiles.has(file)) {
+            const filePath = path.join(storage.evidenceDir, file);
+            await fs.rm(filePath, { force: true }).catch(() => {});
+            limpos.evidencias.push(file);
+          }
+        }
+      }
+    } catch (_) {}
+
+    return limpos;
+  },
+
+  reconcileOrphans: async (executor = db) => {
+    return progressService.reconciliarArquivosOrfaos(executor);
   }
 };
 

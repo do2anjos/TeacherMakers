@@ -161,6 +161,30 @@ describe('fluxos críticos isolados do TeacherMakers', () => {
     }
   });
 
+  test('reconciliação de arquivos órfãos limpa resíduos de interrupção abrupta preservando evidências válidas', async () => {
+    const progressService = require('../../src/services/progressService');
+    const orphanPart = path.join(isolatedDataRoot, '.tmp', 'uploads', 'orfao-crashed.part');
+    const orphanEvidence = path.join(isolatedDataRoot, 'uploads', 'evidencias', 'evidencia-orfao-sem-banco.png');
+
+    fs.writeFileSync(orphanPart, 'dados parciais residuais');
+    fs.writeFileSync(orphanEvidence, png);
+
+    expect(fs.existsSync(orphanPart)).toBe(true);
+    expect(fs.existsSync(orphanEvidence)).toBe(true);
+
+    const limpos = await progressService.reconciliarArquivosOrfaos(db);
+
+    expect(limpos.temporarios).toContain('orfao-crashed.part');
+    expect(limpos.evidencias).toContain('evidencia-orfao-sem-banco.png');
+    expect(fs.existsSync(orphanPart)).toBe(false);
+    expect(fs.existsSync(orphanEvidence)).toBe(false);
+
+    const evidenciasValidas = await all('SELECT foto_url FROM evidencias');
+    expect(evidenciasValidas.length).toBeGreaterThan(0);
+    const validFilename = decodeURIComponent(evidenciasValidas[0].foto_url.split('/').pop());
+    expect(fs.existsSync(path.join(isolatedDataRoot, 'uploads', 'evidencias', validFilename))).toBe(true);
+  });
+
   test('cria estado inicial sem conclusão e impede acesso à trilha bloqueada', async () => {
     const user = await createUser('estado-inicial@test.local');
     const progress = await all('SELECT modulo_id, status, estado_acesso FROM progresso_modulo WHERE usuario_id = ? ORDER BY modulo_id', [user.id]);

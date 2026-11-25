@@ -116,6 +116,9 @@ if (require.main === module) {
 
   initDatabase().then(async () => {
     await diagnosticService.initialize();
+    await require('./services/progressService').reconciliarArquivosOrfaos().catch((err) => {
+      logger.warn('orphan_reconciliation_warning', { error: err?.message || String(err) });
+    });
     httpServer = app.listen(port, () => {
       logger.info(`Servidor rodando na porta ${port}`);
       logger.info(`Modo: ${process.env.NODE_ENV || 'development'}`);
