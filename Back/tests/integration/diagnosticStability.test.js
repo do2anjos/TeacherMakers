@@ -160,7 +160,10 @@ test('authorized development draft completes the full diagnostic and persists an
     const completed = await request(app).get('/api/diagnostic').set('Authorization', auth);
     expect(completed.status).toBe(200);
     expect(completed.body.dados.status).toBe('completed');
-    expect(completed.body.dados.questions).toEqual([]);
+    // Após concluir, as questões continuam disponíveis para consulta, sem expor o gabarito.
+    expect(completed.body.dados.questions).toHaveLength(10);
+    expect(completed.body.dados.questions.every((question) => question.correctOptionId === undefined)).toBe(true);
+    expect(Object.keys(completed.body.dados.answers)).toHaveLength(10);
   });
 
   const persisted = await new Promise((resolve, reject) => db.get(

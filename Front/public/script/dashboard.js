@@ -130,8 +130,7 @@ async function loadDiagnosticSummary() {
 
         status.textContent = isCompleted ? 'Concluído' : 'Pendente';
         if (isCompleted) {
-            const acertos = (attempt.pontuacao !== null && attempt.pontuacao !== undefined) ? ` (${attempt.pontuacao}/${attempt.totalQuestoes || 10} acertos)` : '';
-            description.textContent = `Sua linha de base diagnóstica já foi registrada com sucesso${acertos}. O pré-teste não altera seu progresso nas aulas.`;
+            description.textContent = 'Sua linha de base diagnóstica já foi registrada. Você pode consultar suas respostas quando quiser. O pré-teste não altera seu progresso nas aulas.';
         } else {
             description.textContent = 'Registre sua linha de base diagnóstica. O pré-teste não altera seu progresso nas aulas.';
         }

@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const back = document.getElementById('diagnostic-back');
   const next = document.getElementById('diagnostic-next');
   const submit = document.getElementById('diagnostic-submit');
+  const review = document.getElementById('diagnostic-review');
+  const reviewList = document.getElementById('diagnostic-review-list');
 
   if (!TeacherMakersApi.isAuthenticated()) { window.location.href = 'Login.html'; return; }
 
@@ -22,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const attempt = await TeacherMakersApi.getDiagnostic();
     if (attempt.status === 'completed') {
-      showCompletion('Pr\u00e9-teste conclu\u00eddo. Suas respostas foram registradas como linha de base.');
+      showReview(attempt);
       return;
     }
     questions = attempt.questions || [];
@@ -76,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     submit.textContent = 'Salvando…';
     try {
       await TeacherMakersApi.submitDiagnostic(questions.map((question) => ({ questionId: question.id, optionId: answers[question.id] })));
-      showCompletion('Pr\u00e9-teste conclu\u00eddo. Suas respostas foram registradas como linha de base.');
+      showReview({ questions, answers });
     } catch (error) {
       submit.disabled = false;
       submit.textContent = 'Concluir pré-teste';
@@ -84,17 +86,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  function showCompletion(message) {
+  function showReview(attempt) {
     form.hidden = true;
     loading.hidden = true;
-    alertBox.classList.add('diagnostic-success');
-    alertBox.textContent = message;
-    const link = document.createElement('a');
-    link.className = 'btn btn-primary';
-    link.href = TeacherMakersApi.getUser().onboarding_concluido ? 'home.html' : 'introducao.html';
-    link.textContent = 'Continuar';
-    alertBox.appendChild(document.createElement('br'));
-    alertBox.appendChild(link);
-    alertBox.hidden = false;
+    alertBox.hidden = true;
+
+    const response = attempt.answers || {};
+    const items = (attempt.questions || []).map((question, position) => {
+      const escolhida = response[question.id];
+      const opcao = (question.options || []).find((option) => option.id === escolhida);
+      const rotulo = opcao ? `${opcao.id}) ${opcao.label}` : 'Não respondida';
+      return `
+        <article class="diagnostic-review-item">
+          <h3>${position + 1}. ${question.prompt}</h3>
+          <p class="diagnostic-review-answer">Sua resposta: ${rotulo}</p>
+        </article>
+      `;
+    });
+
+    reviewList.innerHTML = items.join('') || '<p>Suas respostas não estão disponíveis no momento.</p>';
+    document.getElementById('diagnostic-review-home').href =
+      TeacherMakersApi.getUser().onboarding_concluido ? 'home.html' : 'introducao.html';
+    review.hidden = false;
+    document.getElementById('diagnostic-review-title').focus?.();
   }
 });

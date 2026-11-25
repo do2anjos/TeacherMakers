@@ -194,7 +194,9 @@ const diagnosticService = {
       pontuacao: attempt.status === 'completed' ? attempt.pontuacao : null,
       totalQuestoes: 10,
       answers: Object.fromEntries(answers.map((answer) => [answer.questao_codigo, answer.resposta])),
-      questions: attempt.status === 'completed' ? [] : bank.questions.map(({ id, prompt, options }) => ({ id, prompt, options }))
+      // As questões são devolvidas também após a conclusão para permitir a consulta das respostas.
+      // Nunca expomos correctOptionId: o pré-teste é instrumento de percepção, não avaliativo.
+      questions: bank.questions.map(({ id, prompt, options }) => ({ id, prompt, options }))
     };
   },
 

@@ -308,7 +308,8 @@ delete process.env.REQUIRE_DIAGNOSTIC_PRETEST;
 
     const resumed = await request(app).get('/api/diagnostic').set('Authorization', auth);
     expect(resumed.body.dados.status).toBe('completed');
-    expect(resumed.body.dados.questions).toHaveLength(0);
+    expect(resumed.body.dados.questions).toHaveLength(10);
+    expect(resumed.body.dados.questions.every((question) => question.correctOptionId === undefined)).toBe(true);
     expect((await all('SELECT onboarding_concluido FROM usuarios WHERE id = ?', [user.id]))[0].onboarding_concluido).toBe(0);
     expect(await all('SELECT modulo_id, status, percentual, estado_acesso FROM progresso_modulo WHERE usuario_id = ? ORDER BY modulo_id', [user.id])).toEqual(progressBefore);
     expect((await all('SELECT pontuacao, total_questoes, versao_conteudo FROM diagnosticos WHERE usuario_id = ?', [user.id]))[0])
