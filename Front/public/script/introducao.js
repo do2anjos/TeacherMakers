@@ -21,11 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let etapaAtual = 0;
   const maxEtapas = slides.length - 1;
-  const optionalDiagnosticLink = document.createElement('a');
-  optionalDiagnosticLink.href = 'pre-teste.html';
-  optionalDiagnosticLink.textContent = 'Fazer pr\u00e9-teste opcional';
-  optionalDiagnosticLink.className = 'btn btn-outline';
-  slides[maxEtapas].appendChild(optionalDiagnosticLink);
+  const diagnosticLink = document.createElement('a');
+  diagnosticLink.href = 'pre-teste.html';
+  diagnosticLink.textContent = 'Iniciar pr\u00e9-teste (obrigat\u00f3rio)';
+  diagnosticLink.className = 'btn btn-primary';
+  slides[maxEtapas].appendChild(diagnosticLink);
 
   function updateSlides() {
     
