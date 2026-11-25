@@ -1,0 +1,242 @@
+{
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "No contexto educacional, o que caracteriza primordialmente o Movimento Maker e a Cultura Maker?",
+      "options": [
+        {
+          "id": "A",
+          "label": "Uma metodologia centrada na transmissão teórica de conteúdos por meio de apostilas padronizadas."
+        },
+        {
+          "id": "B",
+          "label": "Uma abordagem de aprendizagem prática em que as pessoas criam, constroem, testam, revisam e compartilham soluções."
+        },
+        {
+          "id": "C",
+          "label": "O uso obrigatório de laboratórios avançados, impressoras 3D e equipamentos eletrônicos em toda atividade."
+        },
+        {
+          "id": "D",
+          "label": "A reprodução de um produto definido pelo professor, sem mudanças feitas pelos participantes."
+        }
+      ],
+      "correctOptionId": "B"
+    },
+    {
+      "id": "q2",
+      "prompt": "Na prática pedagógica da Cultura Maker, como o erro durante a construção de um projeto deve ser interpretado?",
+      "options": [
+        {
+          "id": "A",
+          "label": "Como um resultado que deve ser escondido para preservar a avaliação do projeto."
+        },
+        {
+          "id": "B",
+          "label": "Como um sinal de que a atividade prática deve ser interrompida."
+        },
+        {
+          "id": "C",
+          "label": "Como parte da iteração e da prototipagem, que pode gerar reflexão e novas tentativas."
+        },
+        {
+          "id": "D",
+          "label": "Como uma falha que somente o professor deve corrigir, sem participação do estudante."
+        }
+      ],
+      "correctOptionId": "C"
+    },
+    {
+      "id": "q3",
+      "prompt": "Ao construir uma maquete sustentável automatizada, dividir o desafio em partes menores, como estrutura, iluminação e sensores, corresponde a qual pilar do Pensamento Computacional?",
+      "options": [
+        {
+          "id": "A",
+          "label": "Decomposição."
+        },
+        {
+          "id": "B",
+          "label": "Abstração."
+        },
+        {
+          "id": "C",
+          "label": "Reconhecimento de padrões."
+        },
+        {
+          "id": "D",
+          "label": "Algoritmos."
+        }
+      ],
+      "correctOptionId": "A"
+    },
+    {
+      "id": "q4",
+      "prompt": "Quando o professor estimula os estudantes a identificar semelhanças entre o mecanismo de uma tesoura e o de uma gangorra para reaproveitar essa lógica em um projeto, qual habilidade está sendo trabalhada?",
+      "options": [
+        {
+          "id": "A",
+          "label": "Decomposição."
+        },
+        {
+          "id": "B",
+          "label": "Depuração."
+        },
+        {
+          "id": "C",
+          "label": "Abstração."
+        },
+        {
+          "id": "D",
+          "label": "Reconhecimento de padrões."
+        }
+      ],
+      "correctOptionId": "D"
+    },
+    {
+      "id": "q5",
+      "prompt": "O que significa aplicar abstração na resolução de um desafio maker ou computacional?",
+      "options": [
+        {
+          "id": "A",
+          "label": "Dividir o desafio em tarefas menores e independentes."
+        },
+        {
+          "id": "B",
+          "label": "Selecionar os elementos relevantes para o problema e deixar de lado detalhes que não afetam a solução."
+        },
+        {
+          "id": "C",
+          "label": "Repetir todas as etapas até chegar ao mesmo resultado."
+        },
+        {
+          "id": "D",
+          "label": "Escrever uma sequência ordenada de instruções para executar uma tarefa."
+        }
+      ],
+      "correctOptionId": "B"
+    },
+    {
+      "id": "q6",
+      "prompt": "No Pensamento Computacional, o que melhor define um algoritmo?",
+      "options": [
+        {
+          "id": "A",
+          "label": "Uma lista de materiais necessários para construir um objeto."
+        },
+        {
+          "id": "B",
+          "label": "Uma representação visual de todas as características de um problema."
+        },
+        {
+          "id": "C",
+          "label": "Uma sequência ordenada e finita de instruções para resolver um problema ou realizar uma tarefa."
+        },
+        {
+          "id": "D",
+          "label": "A divisão de um problema complexo em partes menores."
+        }
+      ],
+      "correctOptionId": "C"
+    },
+    {
+      "id": "q7",
+      "prompt": "É possível desenvolver Pensamento Computacional na educação básica sem usar computadores, telas ou internet?",
+      "options": [
+        {
+          "id": "A",
+          "label": "Sim. Jogos, desafios de lógica, atividades corporais e materiais físicos podem trabalhar essas habilidades."
+        },
+        {
+          "id": "B",
+          "label": "Não. Pensamento Computacional só pode ser desenvolvido programando em um computador."
+        },
+        {
+          "id": "C",
+          "label": "Sim, mas somente quando cada estudante usa um dispositivo eletrônico sem conexão à internet."
+        },
+        {
+          "id": "D",
+          "label": "Não. Sem internet, não é possível trabalhar resolução de problemas computacionais."
+        }
+      ],
+      "correctOptionId": "A"
+    },
+    {
+      "id": "q8",
+      "prompt": "Qual é o principal objetivo pedagógico de manter um diário de bordo das criações Maker?",
+      "options": [
+        {
+          "id": "A",
+          "label": "Substituir a construção do projeto por um relatório escrito."
+        },
+        {
+          "id": "B",
+          "label": "Registrar apenas o produto final para comparar os estudantes entre si."
+        },
+        {
+          "id": "C",
+          "label": "Criar uma lista de materiais para compras futuras, sem registrar o processo."
+        },
+        {
+          "id": "D",
+          "label": "Apoiar a reflexão sobre desafios, decisões, tentativas e mudanças feitas ao longo do projeto."
+        }
+      ],
+      "correctOptionId": "D"
+    },
+    {
+      "id": "q9",
+      "prompt": "Sobre materiais para atividades Maker em escolas, qual afirmação é mais adequada?",
+      "options": [
+        {
+          "id": "A",
+          "label": "Uma atividade Maker só é válida quando utiliza equipamentos eletrônicos novos."
+        },
+        {
+          "id": "B",
+          "label": "Sucata, papelão e materiais acessíveis podem apoiar projetos relevantes quando escolhidos com propósito e segurança."
+        },
+        {
+          "id": "C",
+          "label": "Materiais reutilizados não podem ser usados em atividades de aprendizagem."
+        },
+        {
+          "id": "D",
+          "label": "A escolha dos materiais deve priorizar a complexidade técnica, mesmo quando não se relaciona ao objetivo pedagógico."
+        }
+      ],
+      "correctOptionId": "B"
+    },
+    {
+      "id": "q10",
+      "prompt": "Qual é o papel esperado do professor ao conduzir uma oficina baseada na Cultura Maker e no Pensamento Computacional?",
+      "options": [
+        {
+          "id": "A",
+          "label": "Demonstrar uma solução única e pedir que todos a reproduzam sem alterações."
+        },
+        {
+          "id": "B",
+          "label": "Evitar que os estudantes testem ideias antes de conhecerem toda a teoria."
+        },
+        {
+          "id": "C",
+          "label": "Mediar a aprendizagem e incentivar curiosidade, colaboração, experimentação e autonomia."
+        },
+        {
+          "id": "D",
+          "label": "Avaliar somente a aparência do produto final, sem considerar o processo."
+        }
+      ],
+      "correctOptionId": "C"
+    }
+  ],
+  "metadata": {
+    "status": "approved",
+    "version": "1.0",
+    "title": "Pré-teste de Cultura Maker e Pensamento Computacional",
+    "approval": "approved",
+    "approvedAt": "2026-11-25",
+    "source": "diagnostic-questions.draft.json"
+  }
+}
