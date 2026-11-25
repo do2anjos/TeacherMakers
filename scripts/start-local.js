@@ -5,6 +5,9 @@ const net = require('node:net');
 const projectRoot = path.resolve(__dirname, '..');
 const backendRoot = path.join(projectRoot, 'Back');
 const frontendRoot = path.join(projectRoot, 'Front', 'public');
+// Carrega o .env do backend para que o log reflita a mesma configuração usada pelo servidor.
+const dotenvPath = require.resolve('dotenv', { paths: [backendRoot] });
+require(dotenvPath).config({ path: path.join(backendRoot, '.env') });
 const expressPath = require.resolve('express', { paths: [backendRoot] });
 const nodemonPath = require.resolve('nodemon/bin/nodemon.js', { paths: [backendRoot] });
 const express = require(expressPath);

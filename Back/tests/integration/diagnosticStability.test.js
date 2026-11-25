@@ -7,8 +7,6 @@ process.env.NODE_ENV = 'test';
 process.env.DATA_DIR = dataRoot;
 process.env.DATABASE_URL = path.join(dataRoot, 'stability.sqlite');
 process.env.JWT_SECRET = 'stability-test-secret';
-delete process.env.DIAGNOSTIC_QUESTIONS_FILE;
-delete process.env.DIAGNOSTIC_ALLOW_DRAFT_CONTENT;
 
 const sqlite3 = require('sqlite3').verbose();
 const request = require('supertest');
@@ -19,6 +17,10 @@ const userModel = require('../../src/models/userModel');
 const logger = require('../../src/config/logger');
 const migration = require('../../src/migrations/003_repair_legacy_diagnostics');
 const attemptConstraintMigration = require('../../src/migrations/004_repair_diagnostic_attempt_constraints');
+
+// O database.js carrega o .env do backend; remover depois dos requires para isolar o teste.
+delete process.env.DIAGNOSTIC_QUESTIONS_FILE;
+delete process.env.DIAGNOSTIC_ALLOW_DRAFT_CONTENT;
 
 function run(sql, params = []) {
   return new Promise((resolve, reject) => db.run(sql, params, function(error) {
