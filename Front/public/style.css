@@ -155,6 +155,7 @@ nav .links a:hover       { color: var(--primary); }
   align-items: center;
   gap: .5rem;
   padding: .55rem 1.4rem;
+  min-height: 48px; /* WCAG 2.5.5 — área de toque em todas as larguras (inclui paisagem de tablets > 1024px) */
   border-radius: 8px;
   font-size: .9rem;
   font-weight: 500;
