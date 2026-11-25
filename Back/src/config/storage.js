@@ -17,8 +17,10 @@ const databasePath = configuredDatabase
   : path.join(dataRoot, 'database.sqlite');
 
 async function ensureStorage() {
+  // As evidências são gravadas como BLOB no banco; disco local é opcional.
+  // Em produção sem DATA_DIR (ex.: Render free), não há diretórios a criar.
   if (process.env.NODE_ENV === 'production' && !process.env.DATA_DIR) {
-    throw new Error('DATA_DIR must point to persistent storage in production.');
+    return;
   }
   await Promise.all([
     fs.mkdir(evidenceDir, { recursive: true }),

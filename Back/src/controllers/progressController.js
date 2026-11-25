@@ -1,8 +1,29 @@
 const progressService = require('../services/progressService');
 const responseHelper = require('../utils/responseHelper');
 const { validateImage } = require('../utils/imageValidation');
+const db = require('../config/database');
 
 const progressController = {
+  getEvidenciaFoto: async (req, res, next) => {
+    try {
+      const row = await new Promise((resolve, reject) => {
+        db.get('SELECT foto_blob, foto_mime FROM evidencias WHERE foto_token = ?', [req.params.token], (error, data) => error ? reject(error) : resolve(data));
+      });
+      if (!row || !row.foto_blob) {
+        const erro = new Error('Foto da evidência não encontrada.');
+        erro.status = 404;
+        throw erro;
+      }
+      const bytes = row.foto_blob instanceof Buffer ? row.foto_blob : Buffer.from(row.foto_blob);
+      res.set('Content-Type', row.foto_mime || 'application/octet-stream');
+      res.set('Cache-Control', 'private, max-age=3600');
+      return res.send(bytes);
+    } catch (erro) {
+      next(erro);
+    }
+  },
+
+
   listarConquistas: async (req, res, next) => {
     try {
       const conquistas = await progressService.listarConquistas(req.user.id);

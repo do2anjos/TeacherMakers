@@ -12,6 +12,7 @@ const upload = multer({
 router.use(authMiddleware);
 
 router.get('/conquistas', progressController.listarConquistas);
+router.get('/evidencias/:token/foto', progressController.getEvidenciaFoto);
 router.post('/aula/:aulaId/complete', progressController.completarAula);
 router.post('/quiz/submit', progressController.submeterQuiz);
 router.post('/pratica/finish', (req, res, next) => {

@@ -265,6 +265,9 @@ function initDatabase() {
                 progresso_pratica_id INTEGER NOT NULL,
                 diario_bordo TEXT,
                 foto_url TEXT,
+                foto_blob BLOB,
+                foto_mime TEXT,
+                foto_token TEXT,
                 data_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (progresso_pratica_id) REFERENCES progresso_pratica (id) ON DELETE CASCADE
             );

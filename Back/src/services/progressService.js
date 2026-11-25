@@ -128,15 +128,13 @@ const progressService = {
     const user = await queryGet(db, 'SELECT id FROM usuarios WHERE id = ?', [userId]);
     if (!user) { const erro = new Error('Usuário não encontrado.'); erro.status = 401; throw erro; }
 
-    await storage.ensureStorage();
-    const format = path.extname(fotoPath.originalname).toLowerCase();
-    const filename = `evidencia-${crypto.randomUUID()}${format}`;
-    const temporaryPath = path.join(storage.temporaryDir, `${filename}.part`);
-    const finalPath = path.join(storage.evidenceDir, filename);
-    let finalCreated = false;
+    // A imagem é gravada como BLOB no banco (Turso/SQLite), sem depender de disco local.
+    // Isso elimina a perda de evidências em filesystems efêmeros (ex.: Render free).
+    const fotoToken = crypto.randomUUID();
+    const fotoMime = fotoPath.mimetype || 'application/octet-stream';
+    const fotoBuffer = Buffer.from(fotoPath.buffer);
 
     try {
-      await fs.writeFile(temporaryPath, fotoPath.buffer, { flag: 'wx', mode: 0o600 });
       const result = await db.withTransaction(async (tx) => {
         await queryRun(tx, `
           INSERT INTO progresso_pratica (usuario_id, pratica_id, status, etapa_atual)
@@ -148,12 +146,10 @@ const progressService = {
         const progresso = await queryGet(tx, 'SELECT id FROM progresso_pratica WHERE usuario_id = ? AND pratica_id = ?', [userId, praticaId]);
         if (!progresso) throw new Error('Não foi possível localizar o progresso recém-salvo.');
 
-        await fs.rename(temporaryPath, finalPath);
-        finalCreated = true;
         const evidence = await queryRun(tx, `
-          INSERT INTO evidencias (progresso_pratica_id, diario_bordo, foto_url)
-          VALUES (?, ?, ?)
-        `, [progresso.id, diarioBordo.trim(), storage.evidenceUrl(filename)]);
+          INSERT INTO evidencias (progresso_pratica_id, diario_bordo, foto_url, foto_blob, foto_mime, foto_token)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `, [progresso.id, diarioBordo.trim(), `/api/progress/evidencias/${fotoToken}/foto`, fotoBuffer, fotoMime, fotoToken]);
         const saved = await queryGet(tx, 'SELECT data_envio FROM evidencias WHERE id = ?', [evidence.lastID]);
 
         const newBadges = await awardPracticeAchievements(tx, userId, practice);
@@ -177,8 +173,6 @@ const progressService = {
       });
       return result;
     } catch (error) {
-      await fs.rm(temporaryPath, { force: true }).catch(() => {});
-      if (finalCreated) await fs.rm(finalPath, { force: true }).catch(() => {});
       throw error;
     }
   },
