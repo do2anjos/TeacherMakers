@@ -2412,6 +2412,7 @@ textarea.form-textarea:focus { border-color: var(--primary); outline: none; }
 }
 
 .practice-success-dialog {
+  margin: auto;
   width: min(92vw, 34rem);
   max-height: min(85vh, 42rem);
   overflow: auto;
