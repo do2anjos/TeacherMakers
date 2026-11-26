@@ -3,6 +3,7 @@ const contentModel = require('../models/contentModel');
 const contentService = require('./contentService');
 const db = require('../config/database');
 const storage = require('../config/storage');
+const { ACHIEVEMENT_CATALOG, normalizeTitle, isSatisfiedBy } = require('../config/achievements');
 const fs = require('fs/promises');
 const path = require('path');
 const crypto = require('crypto');
@@ -13,12 +14,13 @@ const progressService = {
   listarConquistas: async (userId) => {
     const earned = await queryAll(db, 'SELECT codigo, data_conquista FROM conquistas_usuario WHERE usuario_id = ?', [userId]);
     const earnedByCode = new Map(earned.map((row) => [row.codigo, row.data_conquista]));
-    return [
-      { codigo: 'primeiro-circuito', nome: 'Primeiro Circuito', descricao: 'Concluiu a primeira prática de circuitos.' },
-      { codigo: 'mestre-decomposicao', nome: 'Mestre da Decomposição', descricao: 'Concluiu a prática de Decomposição.' },
-      { codigo: 'cacador-padroes', nome: 'Caçador de Padrões', descricao: 'Concluiu a prática de Reconhecimento de Padrões.' },
-      { codigo: 'pensador-computacional', nome: 'Pensador Computacional', descricao: 'Concluiu práticas dos quatro pilares do pensamento computacional.' }
-    ].map((badge) => ({ ...badge, desbloqueado: earnedByCode.has(badge.codigo), dataConquista: earnedByCode.get(badge.codigo) || null }));
+    return ACHIEVEMENT_CATALOG.map((badge) => ({
+      codigo: badge.codigo,
+      nome: badge.nome,
+      descricao: badge.descricao,
+      desbloqueado: earnedByCode.has(badge.codigo),
+      dataConquista: earnedByCode.get(badge.codigo) || null
+    }));
   },
 
   completarAula: async (userId, aulaId) => {
@@ -154,7 +156,7 @@ const progressService = {
         `, [progresso.id, diarioBordo.trim(), `/api/progress/evidencias/${fotoToken}/foto`, fotoBuffer, fotoMime, fotoToken]);
         const saved = await queryGet(tx, 'SELECT data_envio FROM evidencias WHERE id = ?', [evidence.lastID]);
 
-        const newBadges = await awardPracticeAchievements(tx, userId, practice);
+        const newBadges = await awardPracticeAchievements(tx, userId);
         const moduleProgress = await queryGet(tx, 'SELECT status, percentual FROM progresso_modulo WHERE usuario_id = ? AND modulo_id = ?', [userId, practice.modulo_id]);
         const modules = await queryAll(tx, 'SELECT id, titulo, ordem FROM modulos ORDER BY ordem ASC', []);
         const nextModule = moduleProgress?.status === 'concluido' && Number(moduleProgress.percentual) === 100
@@ -261,22 +263,18 @@ function queryRun(executor, sql, params) {
   }));
 }
 
-async function awardPracticeAchievements(executor, userId, practice) {
-  const title = `${practice.titulo || ''} ${practice.tipo || ''}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  const candidates = [];
-  if (title.includes('circuit')) candidates.push({ code: 'primeiro-circuito', name: 'Primeiro Circuito', description: 'Concluiu a primeira prática de circuitos.' });
-  if (title.includes('decomposicao')) candidates.push({ code: 'mestre-decomposicao', name: 'Mestre da Decomposição', description: 'Concluiu a prática de Decomposição.' });
-  if (title.includes('padroes')) candidates.push({ code: 'cacador-padroes', name: 'Caçador de Padrões', description: 'Concluiu a prática de Reconhecimento de Padrões.' });
-
+async function awardPracticeAchievements(executor, userId) {
   const completed = await executor.all(`
     SELECT p.titulo, p.tipo FROM praticas p
     JOIN progresso_pratica pp ON pp.pratica_id = p.id
     WHERE pp.usuario_id = ? AND pp.status = 'concluido'
   `, [userId]);
-  const concepts = new Set(completed.map((item) => `${item.titulo || ''} ${item.tipo || ''}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()));
-  if (['decomposicao', 'padroes', 'abstracao', 'algoritmos'].every((concept) => [...concepts].some((value) => value.includes(concept)))) {
-    candidates.push({ code: 'pensador-computacional', name: 'Pensador Computacional', description: 'Concluiu práticas dos quatro pilares do pensamento computacional.' });
-  }
+  // A prática atual já está marcada como concluída na transação, portanto
+  // também faz parte de `completed`.
+  const completedTitles = completed.map((item) => `${item.titulo || ''} ${item.tipo || ''}`);
+  const candidates = ACHIEVEMENT_CATALOG
+    .filter((badge) => isSatisfiedBy(badge, completedTitles))
+    .map((badge) => ({ code: badge.codigo, name: badge.nome, description: badge.descricao }));
 
   const awarded = [];
   for (const badge of candidates) {
